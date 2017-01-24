@@ -16,7 +16,7 @@ var colony = {
         var zoom_y = context.canvas.height / 60;
         context.clearRect(0,0,canvas.width,canvas.height);
         this.map.forEach(
-            function drawStar(star) {
+            function(star) {
                 var x = zoom_x * star[0],
                     y = zoom_y * star[1],
                     r = 5 * star[2],
@@ -35,7 +35,7 @@ var colony = {
                 }
                 context.fill();
                 context.font = '10pt Arial';
-                context.fillText((r * 10).toString(), x + r - 5, y + r + 25);
+                context.fillText((star[5]).toString(), x + r - 5, y + r + 25);
             }
         );
     },
@@ -52,16 +52,16 @@ var colony = {
             $("button.choose_map").click(function () {
                 map_n=parseInt($(this).attr("id").substring(3));
                 colony.map = data.maps[map_n-1];
-                colony.updateMap();
+                colony.map.forEach(function(star){
+                    if(star[3]!=0&&star[5]==0)
+                    {
+                        star[5]=star[2]*10;
+                    }
+                });
+                colony.updateMap();//Should change
                 $("button.choose_map").hide();
                 $("#choose_tip").hide();
             });
         });
-        //studying
-        /* this.map = [
-             [20, 20, 1, 1, 1, 0],
-             [20, 40, 2, 1, 1, 0],
-             [60, 40, 3, 2, 1, 0]
-         ];*/
     },
 }
