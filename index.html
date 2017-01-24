@@ -1,33 +1,31 @@
 <!DOCTYPE html>
-
 <html>
-   <head>
-     <title>colony alpha 0</title>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>colony alpha 0.0.1</title>
+  <script type="text/javascript" src="jquery-3.1.1.min.js"></script>
+  <style>
+    body {
+      background: #dddddd;
+    }
+    
+    #main_canvas {
+      margin: 10px;
+      padding: 10px;
+      background: #ffffff;
+    }
+    
+  </style>
+</head>
 
-      <style> 
-         body {
-            background: #dddddd;
-         }
+<body>
+  <p>
+    <button type="button" id="startBtn" onclick="colony.init();">load game</button>
+  </p>
+  <canvas id='main_canvas' width='800' height='600'>
+    Canvas is not supported,please update your browser!
+  </canvas>
+  <script src='main.js'></script>
+</body>
 
-         #canvas {
-            margin: 10px;
-            padding: 10px;
-            background: #ffffff;
-         }
-      </style>
-   </head>
-
-  <body>
-      <h1>
-          colony
-      </h1>
-      <p>
-          <button onclick="colony.init();">start</button>
-      </p>
-    <canvas id='main_canvas' width='800' height='600'>
-      Canvas is not supported,please update your browser!
-    </canvas>
-
-    <script src='main.js'></script>
-  </body>
 </html>
