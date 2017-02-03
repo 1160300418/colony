@@ -5,6 +5,14 @@ background.src = 'background.jpg';
 background.onload = function (e) {
     context.drawImage(background, 0, 0);
 };
+
+function windowTocanvas(canvas, x, y) {
+    var bbox = canvas.getBoundingClientRect();
+    return {
+        x: x - bbox.left * (canvas.width / bbox.width),
+        y: y - bbox.top * (canvas.height / bbox.height)
+    };
+}
 var colony = {
     map: [], //x,y,size,camp,type,population
     color: ["DimGray", "Orchid", "SpringGreen", "OrangeRed", "DodgerBlue", "Black"],
@@ -73,6 +81,18 @@ var colony = {
                 window.addEventListener("resize", function () {
                     colony.updateMap();
                 })
+                canvas.onclick = function (e) {
+                    var zoom_x = context.canvas.width / 80;
+                    var zoom_y = context.canvas.height / 60;
+                    var loc = windowTocanvas(canvas, e.clientX, e.clientY)
+                    var zx = parseInt(loc.x);
+                    var zy = parseInt(loc.y);
+                    var x = zx / zoom_x;
+                    var y = zy / zoom_y;
+                    document.getElementById("input_window").value = e.clientX + "," + e.clientY;
+                    document.getElementById("input_canvas").value = zx + "," + zy;
+                    document.getElementById("input_map").value = parseInt(x) + "," + parseInt(y);
+                }
             });
         } catch (e) {
             console.error("Can\'t load map.json!");
