@@ -1,19 +1,21 @@
 var canvas = document.getElementById('main_canvas'),
     context = canvas.getContext('2d'),
     background = new Image();
-const ZOOM_ON_X = 80,
-    ZOOM_ON_Y = 60;
+const ZOOM_ON_X = 100,
+    ZOOM_ON_Y = 50;
 background.src = 'background.jpg';
 var colony = {
-        map: [], //x,y,size,camp,type,population array,orbit array
+        map: [], //0:x,1:y,2:size,3:camp,4:type,5:population array,6:orbit data array
+        ship: [], //0:x,1:y,2:population,3:camp,4:target
         loadMap: function () {
             try {
                 $.getJSON("map.json", function (data) {
                     colonyUI.chooseMapUI(data, function (n) {
                         colony.map = data.maps[n - 1];
                         colony.map.forEach(function (star) {
-                            if (star[3] != 0 && star[5] == 0) {
-                                star[5] = star[2] * 10; //initialize population 
+                            star[5] = new Array(6);
+                            if (star[3] != 0) {
+                                star[5][star[3]] = star[2] * 10; //initialize population 
                             }
                         });
                     });
@@ -32,21 +34,15 @@ var colony = {
         init: function () {
             colonyUI.canvasResize();
             colonyUI.drawBackground();
-            //context.lineWidth = 5;//any function?
             context.font = '30pt Arial';
             context.fillStyle = 'cornflowerblue';
-            context.strokeStyle = 'black';
             context.fillText("alpha version!", 50, 50); //test only!
-            canvas.addEventListener("click", function (e) { //show XY ,debug only
-                var zoom_x = context.canvas.width / ZOOM_ON_X;
-                var zoom_y = context.canvas.height / ZOOM_ON_Y;
-                var loc = colonyUI.windowTocanvas(canvas, e.clientX, e.clientY)
-                var zx = parseInt(loc.x);
-                var zy = parseInt(loc.y);
-                var x = zx / zoom_x;
-                var y = zy / zoom_y;
-                document.getElementById("input_canvas").value = zx + "," + zy;
-                document.getElementById("input_map").value = parseInt(x) + "," + parseInt(y);
+            /*canvas.addEventListener("touchstart", function(e){
+                colonyUI.select(e);//report a NaN error,however I can not debug on a phone
+                e.preventDefault();
+            });*/
+            canvas.addEventListener("mousedown", function (e) {
+                colonyUI.select(e);
             });
             colony.loadMap();
         },
@@ -68,39 +64,73 @@ var colony = {
             });
             window.addEventListener("resize", function () {
                 colonyUI.canvasResize();
+                colonyUI.updateFrame();
             });
         },
         updateFrame: function () {
-            var zoom_x = context.canvas.width / ZOOM_ON_X;
-            var zoom_y = context.canvas.height / ZOOM_ON_Y;
             context.clearRect(0, 0, canvas.width, canvas.height);
             colonyUI.drawBackground();
-            colony.map.forEach(
-                function (star) {
-                    var x = zoom_x * star[0],
-                        y = zoom_y * star[1],
-                        r = 5 * star[2], //magic number
-                        populationStr = (star[5]).toString(),
-                        textWidth = context.measureText(populationStr).width;
-                    //type = star[4]; //only one type now
-                    context.beginPath();
-                    context.arc(x, y, r + 10, 0, 2 * Math.PI, true); //only when type==1//magic number
-                    context.stroke();
-                    context.fillStyle = colonyUI.color[star[3]];
-                    context.fill();
-                    context.font = '10pt Arial';
-                    context.fillText(populationStr, x - textWidth / 2, y + r + 25); //magic number
-                }
-            );
+            colony.map.forEach(function (star,index) {
+                colonyUI.drawStar(star,index);
+            });
+            colony.ship.forEach(function(ship){
+                colonyUI.drawShip(ship);
+            });
         },
-        animation:function(){
+        animation: function () {
             colonyUI.updateFrame();
         },
+        drawStar: function (star,index) {
+            var zoom_x = context.canvas.width / ZOOM_ON_X,
+                zoom_y = context.canvas.height / ZOOM_ON_Y;
+            var x = zoom_x * star[0],
+                y = zoom_y * star[1],
+                r = 5 * star[2]; //magic number
+            //type = star[4]; //only one type now
+            context.lineWidth = 2;
+            context.beginPath();
+            context.arc(x, y, r + 10, 0, 2 * Math.PI, true); //only when type==1//magic number
+            context.stroke();
+            context.fillStyle = colonyUI.color[star[3]];
+            context.fill();
+            context.font = '10pt Arial';
+            context.fillStyle="black";
+            context.fillText("index:"+index, x , y);//test only
+            var campNum=0,count=0;
+            for(var i=0,len=star[5].length;i<len;i++)
+            {
+                if(!star[5][i])continue;
+                campNum++
+            }
+            star[5].forEach(function (text, i) {
+                if(!text)return;
+                var populationStr = text.toString(),
+                    textWidth = context.measureText(populationStr).width;
+                context.fillStyle = colonyUI.color[i];
+                context.fillText(populationStr, x+(r+10)*Math.sin(count/campNum*Math.PI*2) - textWidth / 2 , y + (r+10)*Math.cos(count/campNum*Math.PI*2) + 15); //magic number
+                count++;
+            })
+        },
+        drawShip: function (ship) {
+
+        },
+        select: function (e) {
+            var zoom_x = context.canvas.width / ZOOM_ON_X;
+            var zoom_y = context.canvas.height / ZOOM_ON_Y;
+            var loc = colonyUI.windowTocanvas(canvas, e.clientX, e.clientY)
+            var zx = parseInt(loc.x);
+            var zy = parseInt(loc.y);
+            var x = zx / zoom_x;
+            var y = zy / zoom_y;
+            document.getElementById("input_canvas").value = zx + "," + zy;
+            document.getElementById("input_map").value = parseInt(x) + "," + parseInt(y);
+        },
         canvasResize: function () {
-            const CANVAS_LEFT = 0.95,
-                CANVAS_TOP = 0.9
-                context.canvas.width = window.innerWidth * CANVAS_LEFT;
-            context.canvas.height = window.innerHeight * CANVAS_TOP;
+            w = window.innerWidth;
+            h = window.innerHeight;
+            var s = w / 2 > h;
+            context.canvas.width = s ? h * 2 : w;
+            context.canvas.height = s ? h : w / 2;
         },
         windowTocanvas: function (canvas, x, y) {
             var bbox = canvas.getBoundingClientRect();

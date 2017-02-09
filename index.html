@@ -6,21 +6,31 @@
   <title>colony alpha 0.0.5</title>
   <script type="text/javascript" src="http://cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
   <style>
+    html,
     body {
-      background: #dddddd;
+      height: 100%;
+      width: 100%;
     }
     
     #main_canvas {
-      margin: 10px;
-      padding: 10px;
       background: #ffffff;
+      display: block;
     }
+    
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    #pos{
+      position: absolute;
+    }
+
   </style>
 </head>
 
 <body>
   <div id="control">
-    <div id="pos" style="position: absolute;left: 30px;top: 40px;display: none">
+    <div id="pos">
       canvas X，Y：<input type="text" id="input_canvas" value="" /> map X,Y: <input type="text" id="input_map" value="" />
     </div>
   </div>
