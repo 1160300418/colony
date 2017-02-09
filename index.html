@@ -3,7 +3,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>colony alpha 0.0.4</title>
+  <title>colony alpha 0.0.5</title>
   <script type="text/javascript" src="http://cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
   <style>
     body {
@@ -20,13 +20,8 @@
 
 <body>
   <div id="control">
-    <button type="button" id="startBtn" onclick="colony.init();">load game</button>
-    <div>
-      窗口 X，Y：<input type="text" id="input_window" value="" /> 
-      <br /> 
-      canvas X，Y：<input type="text" id="input_canvas" value=""/>
-      <br />
-      map X,Y: <input type="text" id="input_map" value=""/>
+    <div id="pos" style="position: absolute;left: 30px;top: 40px;display: none">
+      canvas X，Y：<input type="text" id="input_canvas" value="" /> map X,Y: <input type="text" id="input_map" value="" />
     </div>
   </div>
   <canvas id='main_canvas' width='800' height='600'>
