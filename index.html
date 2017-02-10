@@ -24,6 +24,9 @@
     #pos{
       position: absolute;
       display: none;
+      top:5px;
+      background: rgba(0, 0, 0, 0.3);
+      box-shadow: rgba(0,0,0,0.5) 5px 5px 20px;
     }
 
   </style>
@@ -32,7 +35,7 @@
 <body>
   <div id="control">
     <div id="pos">
-      <button id="pause">pause</button> 
+      <button type="button" id="pause">Pause</button> 
       X，Y：<input type="text" id="input_canvas" value="" />
       map X,Y: <input type="text" id="input_map" value="" />
       select:<input type="text" id="input_select" value="" />

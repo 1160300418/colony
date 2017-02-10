@@ -4,10 +4,19 @@ var canvas = document.getElementById('main_canvas'),
 const ZOOM_ON_X = 100,
     ZOOM_ON_Y = 50;
 background.src = 'background.jpg';
-var lastTime=0;//calculate Fps
+var lastTime = 0; //calculate Fps
+var pause = false;
+document.getElementById("pause").onclick = function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    pause = !pause;
+    this.innerText = pause ? "Start" : "Pause";
+}
 var colony = {
         map: [], //0:x,1:y,2:size,3:camp,4:type,5:population array,6:orbit data array
-        ship: [], //0:x,1:y,2:population,3:camp,4:target
+        ship: [], //0:x,1:y,2:population,3:camp,4:source,5:target
+        camp: 1,
+        shipRatio: 1,
         lastSelect: undefined,
         loadMap: function () {
             try {
@@ -26,14 +35,16 @@ var colony = {
                 console.error("Can\'t load map.json!");
             }
         },
-        shipMove: function (i) {//many bugs
+        shipMove: function (i) {
             var from = colony.lastSelect,
                 to = i;
-            if(from==to)return;
             colony.lastSelect = undefined;
-            //animation
-            colony.map[to][5][from] = colony.map[from][5][from];
-            colony.map[from][5][from] = undefined;
+            if (from == to) return;
+            if (!colony.map[from][5][colony.camp]) return;
+            //animation callback
+            if (!colony.map[to][5][colony.camp]) colony.map[to][5][colony.camp] = 0;
+            colony.map[to][5][colony.camp] += colony.map[from][5][colony.camp] * colony.shipRatio;
+            colony.map[from][5][colony.camp] *= (1 - colony.shipRatio);
         },
         combat: function () {
 
@@ -90,7 +101,7 @@ var colony = {
             colony.ship.forEach(function (ship) {
                 colonyUI.drawShip(ship);
             });
-            if (colony.lastSelect) {
+            if (typeof (colony.lastSelect) != 'undefined') {
                 var zoom_x = context.canvas.width / ZOOM_ON_X,
                     zoom_y = context.canvas.height / ZOOM_ON_Y;
                 var x = zoom_x * colony.map[colony.lastSelect][0],
@@ -100,7 +111,7 @@ var colony = {
                 context.arc(x, y, 10 * colony.map[colony.lastSelect][2] + 50, 0, 2 * Math.PI, true);
                 context.stroke();
             };
-            document.getElementById("input_fps").value =colonyUI.calculateFps().toFixed() + ' fps';
+            document.getElementById("input_fps").value = colonyUI.calculateFps().toFixed() + ' fps';
         },
         drawStar: function (star, index) {
             var zoom_x = context.canvas.width / ZOOM_ON_X,
@@ -116,7 +127,7 @@ var colony = {
             context.fill();
             context.font = '10pt Arial';
             context.fillStyle = "black";
-            context.fillText("index:" + index, x, y); //test only
+            context.fillText("index:" + index, x - 20, y + 5); //test only
             var totalCampNum = 0,
                 campCount = 0,
                 totalPopulation = 0,
@@ -126,7 +137,7 @@ var colony = {
                 totalCampNum++;
                 totalPopulation += star[5][i];
             }
-            star[5].forEach(function (text, i) {//many bugs
+            star[5].forEach(function (text, i) { //many bugs
                 if (!text) return;
                 var populationStr = text.toString(),
                     textWidth = context.measureText(populationStr).width;
@@ -162,8 +173,8 @@ var colony = {
                 star = colony.map[i];
                 var starDistance = colonyUI.distance(zx, zy, zoom_x * star[0], zoom_y * star[1]);
                 if (starDistance < (10 * star[2] + 30)) {
-                    document.getElementById("input_select").value = "select now:" + i+"last:"; //test only
-                    if (!colony.lastSelect) {
+                    document.getElementById("input_select").value = "select now:" + i + "last:"; //test only
+                    if (typeof (colony.lastSelect) == 'undefined') {
                         colony.lastSelect = i;
                     } else {
                         colony.shipMove(i);
@@ -203,7 +214,9 @@ var colony = {
         }
     }
 window.onload = colonyUI.init();
+
 function animation() {
-    colonyUI.updateFrame();
+    if (!pause)
+        colonyUI.updateFrame();
     window.requestAnimationFrame(animation);
 }
