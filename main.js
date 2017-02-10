@@ -4,9 +4,11 @@ var canvas = document.getElementById('main_canvas'),
 const ZOOM_ON_X = 100,
     ZOOM_ON_Y = 50;
 background.src = 'background.jpg';
+var lastTime=0;//calculate Fps
 var colony = {
         map: [], //0:x,1:y,2:size,3:camp,4:type,5:population array,6:orbit data array
         ship: [], //0:x,1:y,2:population,3:camp,4:target
+        lastSelect: undefined,
         loadMap: function () {
             try {
                 $.getJSON("map.json", function (data) {
@@ -24,6 +26,18 @@ var colony = {
                 console.error("Can\'t load map.json!");
             }
         },
+        shipMove: function (i) {//many bugs
+            var from = colony.lastSelect,
+                to = i;
+            if(from==to)return;
+            colony.lastSelect = undefined;
+            //animation
+            colony.map[to][5][from] = colony.map[from][5][from];
+            colony.map[from][5][from] = undefined;
+        },
+        combat: function () {
+
+        }
     },
     colonyUI = {
         color: ["DimGray", "Orchid", "SpringGreen", "OrangeRed", "DodgerBlue", "Black"],
@@ -36,7 +50,6 @@ var colony = {
             colonyUI.drawBackground();
             context.font = '30pt Arial';
             context.fillStyle = 'cornflowerblue';
-
             colony.loadMap();
         },
         chooseMapUI: function (data, dataInit) {
@@ -50,13 +63,13 @@ var colony = {
             $("button.choose_map").click(function () {
                 map_n = parseInt($(this).attr("id").substring(3));
                 dataInit(map_n);
-                colonyUI.animation();
+                window.requestAnimationFrame(animation);
                 $("button.choose_map").hide();
                 $("#choose_tip").hide();
                 $("#pos").show();
             });
             canvas.addEventListener("touchstart", function (e) {
-                colonyUI.select(e); 
+                colonyUI.select(e);
                 e.preventDefault();
             });
             canvas.addEventListener("mousedown", function (e) {
@@ -77,9 +90,17 @@ var colony = {
             colony.ship.forEach(function (ship) {
                 colonyUI.drawShip(ship);
             });
-        },
-        animation: function () {
-            colonyUI.updateFrame();
+            if (colony.lastSelect) {
+                var zoom_x = context.canvas.width / ZOOM_ON_X,
+                    zoom_y = context.canvas.height / ZOOM_ON_Y;
+                var x = zoom_x * colony.map[colony.lastSelect][0],
+                    y = zoom_y * colony.map[colony.lastSelect][1];
+                context.lineWidth = 2;
+                context.beginPath();
+                context.arc(x, y, 10 * colony.map[colony.lastSelect][2] + 50, 0, 2 * Math.PI, true);
+                context.stroke();
+            };
+            document.getElementById("input_fps").value =colonyUI.calculateFps().toFixed() + ' fps';
         },
         drawStar: function (star, index) {
             var zoom_x = context.canvas.width / ZOOM_ON_X,
@@ -89,7 +110,7 @@ var colony = {
             //type = star[4]; //only one type now
             context.lineWidth = 2;
             context.beginPath();
-            context.arc(x, y, 5 * star[2] + 10, 0, 2 * Math.PI, true); //only when type==1//magic number
+            context.arc(x, y, 10 * star[2] + 10, 0, 2 * Math.PI, true); //only when type==1//magic number
             context.stroke();
             context.fillStyle = colonyUI.color[star[3]];
             context.fill();
@@ -105,23 +126,21 @@ var colony = {
                 totalCampNum++;
                 totalPopulation += star[5][i];
             }
-            star[5].forEach(function (text, i) {
+            star[5].forEach(function (text, i) {//many bugs
                 if (!text) return;
                 var populationStr = text.toString(),
                     textWidth = context.measureText(populationStr).width;
                 context.fillStyle = colonyUI.color[i];
-                context.fillText(populationStr, x + (5 * star[2] + 10) * Math.sin(campCount / totalCampNum * Math.PI * 2) - textWidth / 2, y + (5 * star[2] + 10) * Math.cos(campCount / totalCampNum * Math.PI * 2) + 15); //magic number
+                context.fillText(populationStr, x + (10 * star[2] + 10) * Math.sin(campCount / totalCampNum * Math.PI * 2) - textWidth / 2, y + (10 * star[2] + 10) * Math.cos(campCount / totalCampNum * Math.PI * 2) + 15); //magic number
                 context.lineWidth = 4;
                 context.beginPath();
-                context.arc(x, y, 5 * star[2] + 15, (populationCount / totalPopulation * 2 - 0.5) * Math.PI, ((populationCount + star[5][i]) / totalPopulation * 2 - 0.5) * Math.PI, true);
+                context.arc(x, y, 10 * star[2] + 15, (populationCount / totalPopulation * 2 - 0.5) * Math.PI, ((populationCount + star[5][i]) / totalPopulation * 2 - 0.5) * Math.PI, true);
                 context.stroke();
                 campCount++;
                 populationCount += star[5][i];
-            })
+            });
         },
-        drawShip: function (ship) {
-
-        },
+        drawShip: function (ship) {},
         select: function (e) {
             var zoom_x = context.canvas.width / ZOOM_ON_X;
             var zoom_y = context.canvas.height / ZOOM_ON_Y;
@@ -142,18 +161,31 @@ var colony = {
             for (var i = 0, len = colony.map.length; i < len; i++) {
                 star = colony.map[i];
                 var starDistance = colonyUI.distance(zx, zy, zoom_x * star[0], zoom_y * star[1]);
-                if (starDistance < (5 * star[2] + 15)) {
-                    document.getElementById("input_select").value = "select star index:" + i;
+                if (starDistance < (10 * star[2] + 30)) {
+                    document.getElementById("input_select").value = "select now:" + i+"last:"; //test only
+                    if (!colony.lastSelect) {
+                        colony.lastSelect = i;
+                    } else {
+                        colony.shipMove(i);
+                    }
                     match = true;
                     break;
                 }
             }
             if (!match) {
-                document.getElementById("input_select").value = "select none";
+                document.getElementById("input_select").value = "";
+                colony.lastSelect = undefined;
             }
+            document.getElementById("input_select").value += colony.lastSelect ? colony.lastSelect : "none";
         },
         distance: function (x1, y1, x2, y2) {
             return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        },
+        calculateFps: function () {
+            var now = (+new Date),
+                fps = 1000 / (now - lastTime);
+            lastTime = now;
+            return fps;
         },
         canvasResize: function () {
             w = window.innerWidth;
@@ -171,3 +203,7 @@ var colony = {
         }
     }
 window.onload = colonyUI.init();
+function animation() {
+    colonyUI.updateFrame();
+    window.requestAnimationFrame(animation);
+}
