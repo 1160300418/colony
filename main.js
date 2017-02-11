@@ -8,8 +8,8 @@ var colony = {
     map: [], //0:x,1:y,2:size,3:camp,4:type,5:population array,6:orbit data array,7:capture cent
     ship: [], //0:x,1:y,2:population,3:camp,4:source,5:target
     config: {
-        shipSpeed: 0.004,
-        combatSpeed: 0.002,
+        shipSpeed: 0.003,
+        combatSpeed: 0.001,
         captureSpeed: 0.004,
     },
     camp: 1,
@@ -84,6 +84,7 @@ var colony = {
         return star[7];
     },
     winChick:function(){
+        if(!colony.map[0])return;
         var win=true;
         var fail=true;
         for(let i=0,len=colony.map.length;i<len;i++){
