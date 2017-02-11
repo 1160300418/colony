@@ -3,7 +3,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>colony alpha 0.0.5</title>
+  <title>colony alpha 0.1.0</title>
   <script type="text/javascript" src="http://cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
   <style>
     html,
@@ -28,7 +28,11 @@
       background: rgba(0, 0, 0, 0.3);
       box-shadow: rgba(0,0,0,0.5) 5px 5px 20px;
     }
-
+    #input_map,#input_fps,#input_select{
+      width: 50px;
+    }
+    #input_canvas{width: 70px;}
+    #shipRatio{width:400px;}
   </style>
 </head>
 
@@ -42,7 +46,8 @@
       fps:<input type="text" id="input_fps" value="" />
       <button type="button" id="ship_control">shipMove</button>
       <input type="text" id="ship_from_to" value="" />
-    <span id="shipRatioText">shipRatio:100%</span><input type="range" id="shipRatio" min="0" max="100" value="100" />
+    <input type="range" id="shipRatio" min="0" max="100" value="100" />
+    <span id="shipRatioText">shipRatio:100%</span>
     </div>
   </div>
   <canvas id='main_canvas' width='800' height='600'>
