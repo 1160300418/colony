@@ -35,7 +35,7 @@ var colony = {
                 console.error("Can\'t load map.json!");
             }
         },
-        shipMove: function (from,to,authority) {
+        shipMove: function (from, to, authority) {
             if (from == to) return;
             if (!colony.map[from][5][authority]) return;
             //animation callback
@@ -43,7 +43,7 @@ var colony = {
             colony.map[to][5][authority] += colony.map[from][5][authority] * colony.shipRatio;
             colony.map[from][5][authority] *= (1 - colony.shipRatio);
         },
-        combat: function () {
+        combat: function (index) {
 
         }
     },
@@ -130,27 +130,34 @@ var colony = {
             context.fillStyle = "black";
             context.textAlign = "center";
             context.textBaseline = "middle";
-            context.fillText("index:" + index, x , y); //test only
-            var totalPopulation = 0;
-                
+            context.fillText("index:" + index, x, y); //test only
+            var totalPopulation = 0,
+                totalCamp = 0,
+                atWar = false;
             for (var i = 0, len = star[5].length; i < len; i++) {
                 if (!star[5][i]) continue;
                 totalPopulation += star[5][i];
+                totalCamp++;
             }
-            for(var i=0,len=star[5].length,populationCount = 0;i<len;i++)
-            {
-                text=star[5][i];
+            if (totalCamp > 1) atWar = true;
+            for (var i = 0, len = star[5].length, populationCount = 0; i < len; i++) {
+                text = star[5][i];
                 if (!text) continue;
                 var populationStr = text.toString(),
-                     textWidth = context.measureText(populationStr).width;
+                    textWidth = context.measureText(populationStr).width;
                 context.fillStyle = colonyUI.color[i];
                 context.strokeStyle = colonyUI.color[i];
                 context.lineWidth = 10;
-                context.beginPath();//bug here
-                context.arc(x, y, 10 * star[2] + 35, populationCount / totalPopulation * 2  * Math.PI, (populationCount + text) / totalPopulation * 2  * Math.PI, true);
+                context.beginPath();
+                context.arc(x, y, 10 * star[2] + 35, (populationCount / totalPopulation) * 2 * Math.PI, ((populationCount + text) / totalPopulation) * 2 * Math.PI, false);
                 context.stroke();
                 context.lineWidth = 2;
-                context.fillText(populationStr, x + (10 * star[2] + 20) * Math.cos((populationCount + text/2) / totalPopulation * Math.PI * 2) , y - (10 * star[2] + 20) * Math.sin((populationCount + star[5][i]/2) / totalPopulation * Math.PI * 2));
+                if (atWar) {
+                    context.fillText(populationStr, x + (10 * star[2] + 20) * Math.cos((populationCount + text / 2) / totalPopulation * Math.PI * 2), y + (10 * star[2] + 20) * Math.sin((populationCount + star[5][i] / 2) / totalPopulation * Math.PI * 2));
+                    colony.combat(index);
+                }
+                else
+                    context.fillText(populationStr, x ,y+(10 * star[2] + 20));
                 populationCount += text;
             }
         },
@@ -181,7 +188,7 @@ var colony = {
                     if (typeof (colony.lastSelect) == 'undefined') {
                         colony.lastSelect = i;
                     } else {
-                        colony.shipMove(colony.lastSelect,i,colony.camp);
+                        colony.shipMove(colony.lastSelect, i, colony.camp);
                         colony.lastSelect = undefined;
                     }
                     match = true;
