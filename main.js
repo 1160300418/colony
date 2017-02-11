@@ -6,12 +6,6 @@ const ZOOM_ON_X = 100,
 background.src = 'background.jpg';
 var lastTime = 0; //calculate Fps
 var pause = false;
-document.getElementById("pause").onclick = function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    pause = !pause;
-    this.innerText = pause ? "Start" : "Pause";
-}
 var colony = {
         map: [], //0:x,1:y,2:size,3:camp,4:type,5:population array,6:orbit data array
         ship: [], //0:x,1:y,2:population,3:camp,4:source,5:target
@@ -40,8 +34,8 @@ var colony = {
             if (!colony.map[from][5][authority]) return;
             //animation callback
             if (!colony.map[to][5][authority]) colony.map[to][5][authority] = 0;
-            colony.map[to][5][authority] += colony.map[from][5][authority] * colony.shipRatio;
-            colony.map[from][5][authority] *= (1 - colony.shipRatio);
+            colony.map[to][5][authority] += parseInt((colony.map[from][5][authority] * colony.shipRatio).toFixed());
+            colony.map[from][5][authority] = parseInt(((1 - colony.shipRatio)*colony.map[from][5][authority]).toFixed());
         },
         combat: function (index) {
 
@@ -90,6 +84,23 @@ var colony = {
                 colonyUI.canvasResize();
                 colonyUI.updateFrame();
             });
+            document.getElementById("pause").onclick = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                pause = !pause;
+                this.innerText = pause ? "Start" : "Pause";
+            };
+            document.getElementById("ship_control").onclick = function (e) {
+                var shipControlInput = document.getElementById("ship_from_to").value;
+                let from=parseInt(shipControlInput),
+                    to=parseInt(shipControlInput.substring(from.toString().length+1)),
+                    authority=parseInt(shipControlInput.substring(from.toString().length+to.toString().length+2));
+                    colony.shipMove(from,to,authority);
+            };
+            document.getElementById("shipRatio").onchange = function(e){
+                document.getElementById("shipRatioText").innerText="shipRatio:"+this.value+"%";
+                colony.shipRatio=parseInt(this.value)/100;
+            }
         },
         updateFrame: function () {
             context.clearRect(0, 0, canvas.width, canvas.height);
@@ -134,30 +145,29 @@ var colony = {
             var totalPopulation = 0,
                 totalCamp = 0,
                 atWar = false;
-            for (var i = 0, len = star[5].length; i < len; i++) {
+            capturing = false;
+            for (let i = 0, len = star[5].length; i < len; i++) {
                 if (!star[5][i]) continue;
                 totalPopulation += star[5][i];
                 totalCamp++;
             }
             if (totalCamp > 1) atWar = true;
-            for (var i = 0, len = star[5].length, populationCount = 0; i < len; i++) {
+            if (totalCamp == 1 && (!star[5][index])) capturing = true;//bug when index=0
+            for (let i = 0, len = star[5].length, populationCount = 0; i < len; i++) {
                 text = star[5][i];
                 if (!text) continue;
-                var populationStr = text.toString(),
-                    textWidth = context.measureText(populationStr).width;
                 context.fillStyle = colonyUI.color[i];
-                context.strokeStyle = colonyUI.color[i];
-                context.lineWidth = 10;
-                context.beginPath();
-                context.arc(x, y, 10 * star[2] + 35, (populationCount / totalPopulation) * 2 * Math.PI, ((populationCount + text) / totalPopulation) * 2 * Math.PI, false);
-                context.stroke();
-                context.lineWidth = 2;
                 if (atWar) {
-                    context.fillText(populationStr, x + (10 * star[2] + 20) * Math.cos((populationCount + text / 2) / totalPopulation * Math.PI * 2), y + (10 * star[2] + 20) * Math.sin((populationCount + star[5][i] / 2) / totalPopulation * Math.PI * 2));
+                    context.strokeStyle = colonyUI.color[i];
+                    context.lineWidth = 10;
+                    context.beginPath();
+                    context.arc(x, y, 10 * star[2] + 35, (populationCount / totalPopulation) * 2 * Math.PI, ((populationCount + text) / totalPopulation) * 2 * Math.PI, false);
+                    context.stroke();
+                    context.lineWidth = 2;
+                    context.fillText(text, x + (10 * star[2] + 20) * Math.cos((populationCount + text / 2) / totalPopulation * Math.PI * 2), y + (10 * star[2] + 20) * Math.sin((populationCount + star[5][i] / 2) / totalPopulation * Math.PI * 2));
                     colony.combat(index);
-                }
-                else
-                    context.fillText(populationStr, x ,y+(10 * star[2] + 20));
+                } else 
+                    context.fillText(text, x, y + (10 * star[2] + 20));
                 populationCount += text;
             }
         },
