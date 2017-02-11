@@ -9,8 +9,8 @@ var colony = {
     ship: [], //0:x,1:y,2:population,3:camp,4:source,5:target
     config: {
         shipSpeed: 0.004,
-        combatSpeed: 0.03,
-        captureSpeed: 0.08,
+        combatSpeed: 0.002,
+        captureSpeed: 0.004,
     },
     camp: 1,
     shipRatio: 1,
@@ -66,12 +66,12 @@ var colony = {
         {
             if(!star[5][i])continue;
             if(star[5][i]<0)star[5][i]=undefined;
-            star[5][i]-=colony.config.combatSpeed;
+            star[5][i]-=colony.config.combatSpeed* colonyUI.fps;
         }
     },
     capture: function (star) {
         if (!star[7]) star[7] = 0;
-        star[7]+=colony.config.captureSpeed;
+        star[7]+=colony.config.captureSpeed* colonyUI.fps;
         if (star[7] > 100) {
             for (let i = 0, len = star[5].length; i < len; i++) {
                 if (star[5][i]) {
