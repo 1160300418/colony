@@ -5,9 +5,13 @@ background.src = 'background.jpg';
 var lastTime = 0; //calculate Fps
 var pause = false;
 var colony = {
-    map: [], //0:x,1:y,2:size,3:camp,4:type,5:population array,6:orbit data array,7:capture cent
+    map: [], //0:x,1:y,2:size,3:camp,4:type,5:population array,6:orbit data array,7:capture() cent
     ship: [], //0:x,1:y,2:population,3:camp,4:source,5:target
     config: {
+        maxPopulation:20,
+        initPopulation:10,
+        maxCamp:6,//match colonyUI.color.length
+        growthSpeed:0.0005,
         shipSpeed: 0.003,
         combatSpeed: 0.001,
         captureSpeed: 0.004,
@@ -21,9 +25,9 @@ var colony = {
                 colonyUI.controlUI(data, function (n) {
                     colony.map = data.maps[n - 1];
                     colony.map.forEach(function (star) {
-                        star[5] = new Array(6);
+                        star[5] = new Array(colony.config.maxCamp);
                         if (star[3] != 0) {
-                            star[5][star[3]] = star[2] * 10; //initialize population 
+                            star[5][star[3]] = star[2] * colony.config.initPopulation; //initialize population 
                         }
                     });
                 });
@@ -32,17 +36,17 @@ var colony = {
             console.error("Can\'t load map.json!");
         }
     },
-    shipMove: function (from, to, authority) {
+    shipMove: function (from, to, camp) {
         if (from == to) return;
-        if (!colony.map[from][5][authority]) return;
-        if (!colony.map[to][5][authority]) colony.map[to][5][authority] = 0;
-        let movePopulation = parseInt((colony.map[from][5][authority] * colony.shipRatio).toFixed())
-        colony.map[from][5][authority] = parseInt(((1 - colony.shipRatio) * colony.map[from][5][authority]).toFixed());
+        if (!colony.map[from][5][camp]) return;
+        if (!colony.map[to][5][camp]) colony.map[to][5][camp] = 0;
+        let movePopulation = parseInt((colony.map[from][5][camp] * colony.shipRatio).toFixed())
+        colony.map[from][5][camp] = parseInt(((1 - colony.shipRatio) * colony.map[from][5][camp]).toFixed());
         var ship = new Array();
         ship[0] = colony.map[from][0];
         ship[1] = colony.map[from][1];
         ship[2] = movePopulation;
-        ship[3] = authority;
+        ship[3] = camp;
         ship[4] = from;
         ship[5] = to;
         colony.ship.push(ship);
@@ -50,7 +54,7 @@ var colony = {
     shipOrbit: function (aship, index) {
         var distance_x = (colony.map[aship[5]][0] - colony.map[aship[4]][0]), //to-from
             distance_y = (colony.map[aship[5]][1] - colony.map[aship[4]][1]);
-        var distance = colonyUI.distance(colony.map[aship[5]][0], colony.map[aship[4]][0], colony.map[aship[5]][1], colony.map[aship[4]][1]);
+        var distance = colonyUI.distance(colony.map[aship[5]][0], colony.map[aship[5]][1], colony.map[aship[4]][0], colony.map[aship[4]][1]);
         aship[0] += distance_x / distance * colony.config.shipSpeed * colonyUI.fps;
         aship[1] += distance_y / distance * colony.config.shipSpeed * colonyUI.fps;
         if ((aship[0] - colony.map[aship[5]][0]) * distance_x > 0 || (aship[1] - colony.map[aship[5]][1]) * distance_y > 0) {
@@ -83,27 +87,28 @@ var colony = {
         }
         return star[7];
     },
+    grow:function(star){
+        if(star[5][star[3]]<star[2] * colony.config.maxPopulation)
+        star[5][star[3]]+=colony.config.growthSpeed*colonyUI.fps;
+        if(star[5][star[3]]<star[2] * (colony.config.maxPopulation+colony.config.initPopulation))
+        star[5][star[3]]-=colony.config.growthSpeed*colonyUI.fps;
+    },
     winChick:function(){
         if(!colony.map[0])return;
+        if(pause)return;
         var win=true;
         var fail=true;
         for(let i=0,len=colony.map.length;i<len;i++){
             if(colony.map[i][3]!=colony.camp)
-            {
                 win=false;
-            }
             else
-            {
                 fail=false;
-            }
         }
-        if(win)
-        {
+        if(win){
             pause=true;
             alert("Congratulation,you are winner!");
         }
-        if(fail)
-        {
+        if(fail){
             pause=true;
             alert("You are defeated!");
         }
@@ -138,7 +143,7 @@ colonyUI = {
         }
         $("#pos").before(text);
         $("button.choose_map").click(function () {
-            map_n = parseInt($(this).attr("id").substring(3));
+            map_n = parseInt($(this).attr("id").substring(3));//mapX
             dataInit(map_n);
             window.requestAnimationFrame(animation);
             $("button.choose_map").hide();
@@ -164,11 +169,11 @@ colonyUI = {
             this.innerText = pause ? "Start" : "Pause";
         };
         document.getElementById("ship_control").onclick = function (e) {
-            var shipControlInput = document.getElementById("ship_from_to").value;
+            var shipControlInput = document.getElementById("ship_from_to").value;//from,to,camp
             let from = parseInt(shipControlInput),
                 to = parseInt(shipControlInput.substring(from.toString().length + 1)),
-                authority = parseInt(shipControlInput.substring(from.toString().length + to.toString().length + 2));
-            colony.shipMove(from, to, authority);
+                camp = parseInt(shipControlInput.substring(from.toString().length + to.toString().length + 2));
+            colony.shipMove(from, to, camp);
         };
         document.getElementById("shipRatio").onchange = function (e) {
             document.getElementById("shipRatioText").innerText = "shipRatio:" + this.value + "%";
@@ -178,6 +183,7 @@ colonyUI = {
     updateFrame: function () {
         context.clearRect(0, 0, canvas.width, canvas.height);
         colonyUI.drawBackground();
+        colonyUI.fps = colonyUI.calculateFps();
         colony.map.forEach(function (star, index) {
             colonyUI.drawStar(star, index);
             colonyUI.drawShipOnStar(star, index);
@@ -190,7 +196,6 @@ colonyUI = {
             colonyUI.drawStarSelectTip();
         };
         colony.winChick();
-        colonyUI.fps = colonyUI.calculateFps();
         document.getElementById("input_fps").value = colonyUI.fps.toFixed() + ' fps';
     },
     drawStar: function (star, index) {
@@ -250,13 +255,16 @@ colonyUI = {
                 context.arc(x, y, 10 * star[2] + 35, 0, cent / 100 * 2 * Math.PI, false);
                 context.stroke();
             }
+            if((!atWar)&&(!capturing)){
+                colony.grow(star);
+            }
             populationCount += text;
         }
     },
     drawShipOnWay: function (ship) {
         var distance_x = colonyUI.config.zoom_x * (colony.map[ship[5]][0] - colony.map[ship[4]][0]),
             distance_y = colonyUI.config.zoom_y * (colony.map[ship[5]][1] - colony.map[ship[4]][1]);
-        var distance = colonyUI.distance(colonyUI.config.zoom_x * colony.map[ship[5]][0], colonyUI.config.zoom_x * colony.map[ship[4]][0], colonyUI.config.zoom_y * colony.map[ship[5]][1], colonyUI.config.zoom_y * colony.map[ship[4]][1]);
+        var distance = colonyUI.distance(colonyUI.config.zoom_x * colony.map[ship[5]][0], colonyUI.config.zoom_y * colony.map[ship[5]][1], colonyUI.config.zoom_x * colony.map[ship[4]][0], colonyUI.config.zoom_y * colony.map[ship[4]][1]);
         var x = colonyUI.config.zoom_x * ship[0],
             y = colonyUI.config.zoom_x * ship[1];
         context.lineWidth = 3;
