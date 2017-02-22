@@ -93,6 +93,9 @@ var colony = {
         if(star[5][star[3]]<star[2] * (colony.config.maxPopulation+colony.config.initPopulation))
         star[5][star[3]]-=colony.config.growthSpeed*colonyUI.fps;
     },
+    ai:function(){
+        //wait
+    },
     winChick:function(){
         if(!colony.map[0])return;
         if(pause)return;
