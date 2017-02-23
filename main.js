@@ -1,7 +1,7 @@
 var canvas = document.getElementById('main_canvas'),
     context = canvas.getContext('2d'),
     background = new Image();
-background.src = 'background.jpg';
+background.src = 'background.png';
 var lastTime = 0; //calculate Fps
 var pause = false;
 var colony = {
@@ -90,7 +90,7 @@ var colony = {
     grow:function(star){
         if(star[5][star[3]]<star[2] * colony.config.maxPopulation)
         star[5][star[3]]+=colony.config.growthSpeed*colonyUI.fps;
-        if(star[5][star[3]]<star[2] * (colony.config.maxPopulation+colony.config.initPopulation))
+        if(star[5][star[3]]>star[2] * (colony.config.maxPopulation+colony.config.initPopulation))
         star[5][star[3]]-=colony.config.growthSpeed*colonyUI.fps;
     },
     ai:function(){
