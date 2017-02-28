@@ -1,11 +1,11 @@
 var canvas = document.getElementById('main_canvas'),
     context = canvas.getContext('2d'),
     background = new Image();
-background.src = 'background.png';
+background.src = 'background.jpg';
 var lastTime = 0; //calculate Fps
 var pause = false;
 var colony = {
-    map: [], //0:x,1:y,2:size,3:camp,4:type,5:population array,6:orbit data array,7:capture() cent
+    map: [], //0:x,1:y,2:size,3:camp,4:type,5:population array,6:orbit data array,7:capture() cent.8:atWar?
     ship: [], //0:x,1:y,2:population,3:camp,4:source,5:target
     config: {
         maxPopulation:20,
@@ -15,6 +15,7 @@ var colony = {
         shipSpeed: 0.003,
         combatSpeed: 0.001,
         captureSpeed: 0.004,
+        aiThinkSpeed: 500
     },
     camp: 1,
     shipRatio: 1,
@@ -36,12 +37,12 @@ var colony = {
             console.error("Can\'t load map.json!");
         }
     },
-    shipMove: function (from, to, camp) {
+    shipMove: function (from, to, camp,cent) {//cent
         if (from == to) return;
         if (!colony.map[from][5][camp]) return;
         if (!colony.map[to][5][camp]) colony.map[to][5][camp] = 0;
-        let movePopulation = parseInt((colony.map[from][5][camp] * colony.shipRatio).toFixed())
-        colony.map[from][5][camp] = parseInt(((1 - colony.shipRatio) * colony.map[from][5][camp]).toFixed());
+        let movePopulation = parseInt((colony.map[from][5][camp] * cent).toFixed())
+        colony.map[from][5][camp] = parseInt(((1 - cent) * colony.map[from][5][camp]).toFixed());
         var ship = new Array();
         ship[0] = colony.map[from][0];
         ship[1] = colony.map[from][1];
@@ -66,6 +67,7 @@ var colony = {
         //wait
     },
     combat: function (star) {
+        if(!star[8]) star[8]=1;
         for(let i=0,len=star[5].length;i<len;i++)
         {
             if(!star[5][i])continue;
@@ -94,7 +96,61 @@ var colony = {
         star[5][star[3]]-=colony.config.growthSpeed*colonyUI.fps;
     },
     ai:function(){
-        //wait
+        window.setInterval(function(){
+            if(!pause)
+            {
+                for(let aiCamp=1;aiCamp<colony.config.maxCamp;aiCamp++){
+                    if(aiCamp==colony.camp)continue;
+                    var from=undefined,to=undefined,cent=undefined;
+                    var len=colony.map.length;
+                    var population=0;
+                    for(let i=0;i<len;i++){
+                        let star=colony.map[i];
+                        if(!star[5][aiCamp]||star[5][aiCamp]<5)continue;
+                        if(!!star[7])continue;
+                        if(!!star[8]){
+                            from=i;
+                            break;
+                        }
+                        if(!star[8]&&star[5][aiCamp]>population){
+                            population=star[5][aiCamp];
+                            from=i;
+                        }
+                    }
+                    population=1000;
+                    if(typeof (from) == 'undefined')continue;
+                    for(let i=0;i<len;i++){
+                        let star=colony.map[i];
+                        if((star[3]==aiCamp)&&(!!star[7]||!!star[8])){
+                            to=i;
+                            let enemyMax=0;
+                            for(let j=0;j<star[5].length;j++){
+                                if(!!star[5][j]&&star[5][j]>enemyMax)enemyMax=star[5][j];
+                            }
+                            cent=enemyMax/colony.map[from][5][aiCamp];
+                            if(cent<0.9)cent+=0.1;
+                            break;
+                        }
+                        if(star[3]==0){
+                            to=i;
+                            cent=colony.map[from][aiCamp]*0.5>10?0.5:10/colony.map[from][5][aiCamp];
+                            if(Math.random()>0.5)
+                                break;
+                        }
+                        if(!star[7]&&!star[8]&&star[5][star[3]]<population){
+                            population=star[5][star[3]];
+                            to=i;
+                            cent=population/colony.map[from][5][aiCamp];
+                            if(cent<0.9)cent+=0.1;
+                            if(Math.random()>0.5)
+                                break;
+                        }
+                    }
+                if((typeof (from) !='undefined')&&(typeof (to) !='undefined')&&cent>0&&cent<=1)
+                colony.shipMove(from,to,aiCamp,cent);
+                }
+            }
+        },colony.config.aiThinkSpeed);
     },
     winChick:function(){
         if(!colony.map[0])return;
@@ -149,6 +205,7 @@ colonyUI = {
             map_n = parseInt($(this).attr("id").substring(3));//mapX
             dataInit(map_n);
             window.requestAnimationFrame(animation);
+            colony.ai();
             $("button.choose_map").hide();
             $("#choose_tip").hide();
             $("#pos").show();
@@ -176,7 +233,7 @@ colonyUI = {
             let from = parseInt(shipControlInput),
                 to = parseInt(shipControlInput.substring(from.toString().length + 1)),
                 camp = parseInt(shipControlInput.substring(from.toString().length + to.toString().length + 2));
-            colony.shipMove(from, to, camp);
+            colony.shipMove(from, to, camp,colony.shipRatio);
         };
         document.getElementById("shipRatio").onchange = function (e) {
             document.getElementById("shipRatioText").innerText = "shipRatio:" + this.value + "%";
@@ -249,14 +306,18 @@ colonyUI = {
                 context.lineWidth = 2;
                 context.fillText(text.toFixed(), x + (10 * star[2] + 20) * Math.cos((populationCount + text / 2) / totalPopulation * Math.PI * 2), y + (10 * star[2] + 20) * Math.sin((populationCount + star[5][i] / 2) / totalPopulation * Math.PI * 2));
                 colony.combat(star);
-            } else
-                context.fillText(text.toFixed(), x, y + (10 * star[2] + 20));
+            } else{
+                    context.fillText(text.toFixed(), x, y + (10 * star[2] + 20));
+                    star[8]=undefined;
+            }
             if (capturing) {
                 var cent = colony.capture(star);
                 context.lineWidth = 5;
                 context.beginPath();
                 context.arc(x, y, 10 * star[2] + 35, 0, cent / 100 * 2 * Math.PI, false);
                 context.stroke();
+            }else{
+                star[7]=undefined;
             }
             if((!atWar)&&(!capturing)){
                 colony.grow(star);
@@ -310,7 +371,7 @@ colonyUI = {
                 if (typeof (colony.lastSelect) == 'undefined') {
                     colony.lastSelect = i;
                 } else {
-                    colony.shipMove(colony.lastSelect, i, colony.camp);
+                    colony.shipMove(colony.lastSelect, i, colony.camp,colony.shipRatio);
                     colony.lastSelect = undefined;
                 }
                 match = true;
@@ -332,8 +393,8 @@ colonyUI = {
         return fps;
     },
     canvasResize: function () {
-        w = window.innerWidth;
-        h = window.innerHeight;
+        var w = window.innerWidth,
+            h = window.innerHeight;
         var s = w / 2 > h;
         context.canvas.width = s ? h * 2 : w;
         context.canvas.height = s ? h : w / 2;
