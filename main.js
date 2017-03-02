@@ -2,7 +2,9 @@ var canvas = document.getElementById('main_canvas'),
     context = canvas.getContext('2d'),
     background = new Image();
 background.src = 'background.jpg';
-var lastTime = 0; //calculate Fps
+var beginTime;
+var lastTime = Date.now(); //calculate Fps
+var timeLsat = 0;
 var pause = false;
 var colony = {
     map: [], //0:x,1:y,2:size,3:camp,4:type,5:population array,6:orbit data array,7:capture() cent.8:atWar?
@@ -24,6 +26,7 @@ var colony = {
         try {
             $.getJSON("map.json", function (data) {
                 colonyUI.controlUI(data, function (n) {
+                    beginTime=Date.now();
                     colony.map = data.maps[n - 1];
                     colony.map.forEach(function (star) {
                         star[5] = new Array(colony.config.maxCamp);
@@ -243,7 +246,7 @@ colonyUI = {
     updateFrame: function () {
         context.clearRect(0, 0, canvas.width, canvas.height);
         colonyUI.drawBackground();
-        colonyUI.fps = colonyUI.calculateFps();
+        colonyUI.fps = colonyUI.calculateFpsAndTime();
         colony.map.forEach(function (star, index) {
             colonyUI.drawStar(star, index);
             colonyUI.drawShipOnStar(star, index);
@@ -367,7 +370,7 @@ colonyUI = {
             var star = colony.map[i];
             var starDistance = colonyUI.distance(zx, zy, colonyUI.config.zoom_x * star[0], colonyUI.config.zoom_y * star[1]);
             if (starDistance < (10 * star[2] + 30)) {
-                document.getElementById("input_select").value = i; //test only
+                //document.getElementById("input_select").value = i; //test only
                 if (typeof (colony.lastSelect) == 'undefined') {
                     colony.lastSelect = i;
                 } else {
@@ -379,17 +382,19 @@ colonyUI = {
             }
         }
         if (!match) {
-            document.getElementById("input_select").value = "none"; //test only
+            //document.getElementById("input_select").value = "none"; //test only
             colony.lastSelect = undefined;
         }
     },
     distance: function (x1, y1, x2, y2) {
         return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
     },
-    calculateFps: function () {
-        var now = (+new Date),
+    calculateFpsAndTime: function () {
+        var now = Date.now(),
             fps = 1000 / (now - lastTime);
         lastTime = now;
+        timeLsat = lastTime - beginTime;
+        document.getElementById("input_time").value=Math.floor(timeLsat/60000)+":"+Math.floor(timeLsat/1000)%60;
         return fps;
     },
     canvasResize: function () {
