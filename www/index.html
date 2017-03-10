@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+    <!--
+        必要时在以下 META 标记中自定义内容安全策略。将 "unsafe-inline" 添加到 default-src 以启动内联 JavaScript。
+      有关详细信息，请参阅 http://go.microsoft.com/fwlink/?LinkID=617521
+    -->
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
+        <meta charset="utf-8">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <script type="text/javascript" src="scripts/jquery.min.js" ></script>
+        <title>colony</title>
+    </head>
+    <body>
+        <div id="control">
+            <div id="main">
+                <h1>colony</h1>
+                <button type="button" id="start">Start Game!</button>
+                <button type="button" id="openFile">Open Map</button>
+                <input type="file" id="file" style="display: none" />
+            </div>
+            <div id="pos">
+                <button type="button" id="pause">Pause</button>
+                X，Y：<input type="text" id="input_canvas" value="" />
+                map X,Y: <input type="text" id="input_map" value="" />
+                time:<input type="text" id="input_time" value="" />
+                fps:<input type="text" id="input_fps" value="" />
+                <button type="button" id="ship_control">shipMove</button>
+                <input type="text" id="ship_from_to" value="" />
+                <input type="range" id="shipRatio" min="0" max="100" value="100" />
+                <span id="shipRatioText">shipRatio:100%</span>
+            </div>
+        </div>
+        <canvas id='main_canvas' width='800' height='600'></canvas>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="scripts/main.js"></script>
+        <script type="text/javascript" src="scripts/platformOverrides.js"></script>
+        <script type="text/javascript" src="scripts/index.js"></script>
+    </body>
+</html>

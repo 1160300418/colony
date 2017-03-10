@@ -1,0 +1,41 @@
+html,
+body {
+    height: 100%;
+    width: 100%;
+}
+
+#main_canvas {
+    background: #ffffff;
+    display: block;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+#main, #choose {
+    position: absolute;
+}
+
+#pos {
+    position: absolute;
+    display: none;
+    top: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: rgba(0, 0, 0, 0.5) 5px 5px 20px;
+}
+
+#input_map,
+#input_fps,
+#input_select, #input_time{
+    width: 50px;
+}
+
+#input_canvas {
+    width: 70px;
+}
+
+#shipRatio {
+    width: 400px;
+}
