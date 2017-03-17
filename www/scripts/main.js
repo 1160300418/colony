@@ -224,7 +224,7 @@ var colony = {
         title();
         window.addEventListener("resize",title);
         document.getElementById("main_canvas").onclick = function (e) {
-            $("#main").hide();
+            $("#file").hide();
             colony.data=innerMapData;
             colonyUI.main(0);
             this.onclick = undefined;
@@ -261,6 +261,7 @@ var colony = {
             mapN = parseInt($(this).attr("id").substring(3)); //mapX
             $("button.choose_map").hide();
             $("#pos").show();
+            $("#range").show();
             colony.loadMap(mapN);
         });
     },
@@ -462,6 +463,7 @@ var colony = {
         ctx.canvas.height = s ? h : w / 2;
         colonyUI.config.zoom_x = ctx.canvas.width / colonyUI.config.ZOOM_ON_X;
         colonyUI.config.zoom_y = ctx.canvas.height / colonyUI.config.ZOOM_ON_Y;
+        $("#shipRatio").css("margin-left", (w / 2 - 250) + "px");
     },
     windowTocanvas: function (canvas, x, y) {
         var bbox = canvas.getBoundingClientRect();

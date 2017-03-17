@@ -13,7 +13,7 @@
     </head>
     <body>
         <div id="control">
-            <div id="main">
+            <div id="file">
                 <button type="button" id="openFile">Open Map</button>
                 <input type="file" id="file" style="display: none" />
             </div>
@@ -25,12 +25,14 @@
                 fps:<input type="text" id="input_fps" value="" />
                 <button type="button" id="ship_control" style="display: none">shipMove</button>
                 <input type="text" id="ship_from_to" value="" style="display: none"/>
-                <input type="range" id="shipRatio" min="0" max="100" value="100" />
-                <span id="shipRatioText">100%</span>
             </div>
         </div>
         <div id="container">
         <canvas id='main_canvas' width='800' height='600'></canvas>
+        </div>
+        <div id="range">
+            <input type="range" id="shipRatio" min="0" max="100" value="100" />
+            <span id="shipRatioText">100%</span>
         </div>
         <!--script type="text/javascript" src="cordova.js"></script-->
         <script type="text/javascript" src="scripts/main.js"></script>

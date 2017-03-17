@@ -2,17 +2,11 @@ html,
 body {
     height: 100%;
     width: 100%;
-    text-align: center
 }
 
 #main_canvas {
     background: #ffffff;
     display: block;
-    align-content:center;
-}
-
-#container {
-    margin: 0 auto;
 }
 
 * {
@@ -20,7 +14,7 @@ body {
     padding: 0;
 }
 
-#main, #choose {
+#file, #choose {
     position: absolute;
 }
 
@@ -31,9 +25,13 @@ body {
     background: rgba(0, 0, 0, 0.3);
     box-shadow: rgba(0, 0, 0, 0.5) 5px 5px 20px;
 }
-
+#range {
+    position: absolute;
+    display: none;
+    bottom: 5px;
+}
 #input_map {
-    width: 70px;
+    width: 90px;
 }
 #input_fps,
 #input_time{
@@ -41,15 +39,17 @@ body {
 }
 
 #input_canvas {
-    width: 90px;
+    width: 110px;
 }
-
+input[type="text"] {
+    background: rgba(236, 224, 200, 0.5) none repeat scroll 0% 0%;
+}
 /*thanks http://blog.csdn.net/u013347241/article/details/51560290 */
 input[type="range"] {
     margin-top: 2px;
-    background-color: #b5b5b5;
+    background-color: rgba(0, 0, 0, 0.4);
     border-radius: 10px;
-    width: 400px;
+    width: 500px;
     -webkit-appearance: none;
     height: 10px;
 }
