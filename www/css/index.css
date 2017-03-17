@@ -2,11 +2,17 @@ html,
 body {
     height: 100%;
     width: 100%;
+    text-align: center
 }
 
 #main_canvas {
     background: #ffffff;
     display: block;
+    align-content:center;
+}
+
+#container {
+    margin: 0 auto;
 }
 
 * {
@@ -21,21 +27,79 @@ body {
 #pos {
     position: absolute;
     display: none;
-    top: 5px;
+    top: 1px;
     background: rgba(0, 0, 0, 0.3);
     box-shadow: rgba(0, 0, 0, 0.5) 5px 5px 20px;
 }
 
-#input_map,
+#input_map {
+    width: 70px;
+}
 #input_fps,
-#input_select, #input_time{
+#input_time{
     width: 50px;
 }
 
 #input_canvas {
-    width: 70px;
+    width: 90px;
 }
 
-#shipRatio {
+/*thanks http://blog.csdn.net/u013347241/article/details/51560290 */
+input[type="range"] {
+    margin-top: 2px;
+    background-color: #b5b5b5;
+    border-radius: 10px;
     width: 400px;
+    -webkit-appearance: none;
+    height: 10px;
+}
+
+input[type=range]:focus {
+    outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+    height: 15px;
+    border-radius: 10px; /*将轨道设为圆角的*/
+    box-shadow: 0 1px 1px #def3f8, inset 0 .125em .125em #0d1112; /*轨道内置阴影效果*/
+}
+input[type=range]::-moz-range-track {
+    height: 15px;
+    border-radius: 10px; /*将轨道设为圆角的*/
+    box-shadow: 0 1px 1px #def3f8, inset 0 .125em .125em #0d1112; /*轨道内置阴影效果*/
+}
+input[type=range]::-ms-track {
+    height: 25px;
+    border-radius: 10px;
+    box-shadow: 0 1px 1px #def3f8, inset 0 .125em .125em #0d1112;
+    border-color: transparent; /*去除原有边框*/
+    color: transparent; /*去除轨道内的竖线*/
+}
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 25px;
+    width: 25px;
+    margin-top: -5px; /*使滑块超出轨道部分的偏移量相等*/
+    background: #ffffff;
+    border-radius: 50%; /*外观设置为圆形*/
+    border: solid 0.125em rgba(205, 224, 230, 0.5); /*设置边框*/
+    box-shadow: 0 .125em .125em #3b4547; /*添加底部阴影*/
+}
+input[type=range]::-moz-range-thumb {
+    -webkit-appearance: none;
+    height: 25px;
+    width: 25px;
+    margin-top: -5px; /*使滑块超出轨道部分的偏移量相等*/
+    background: #ffffff;
+    border-radius: 50%; /*外观设置为圆形*/
+    border: solid 0.125em rgba(205, 224, 230, 0.5); /*设置边框*/
+    box-shadow: 0 .125em .125em #3b4547; /*添加底部阴影*/
+}
+input[type=range]::-ms-thumb {
+    border: solid 0.125em rgba(205, 224, 230, 0.5);
+    height: 25px;
+    width: 25px;
+    border-radius: 50%;
+    background: #ffffff;
+    margin-top: -5px;
+    box-shadow: 0 .125em .125em #3b4547;
 }

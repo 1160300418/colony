@@ -2,9 +2,8 @@
     ctx = canvas.getContext('2d'),
     background = new Image();
 background.src = './images/background.main.jpg';
-var beginTime;
-var lastTime = Date.now(); //calculate Fps
-var timeLsat = 0;
+var lastTime; //calculate Fps
+var timer = 0;
 var pause = false;
 var innerMapData={ maps: [[[20, 20, 2, 1, 1], [60, 40, 1, 2, 1]], [[20, 20, 1, 1, 1], [20, 40, 2, 1, 1], [60, 40, 3, 2, 1], [60, 20, 3, 3, 1], [30, 10, 1, 0, 1]]], date: "2017.1.24", author: "w12101111" };
 var colony = {
@@ -25,7 +24,7 @@ var colony = {
     shipRatio: 1,
     lastSelect: undefined,
     loadMap: function (n) {
-        beginTime = Date.now();
+        lastTime = Date.now();
         colony.map = colony.data.maps[n - 1];
         colony.map.forEach(function (star) {
             star[5] = new Array(colony.config.maxCamp);
@@ -53,8 +52,8 @@ var colony = {
         colony.ship.push(ship);
     },
     shipOrbit: function (aship, index) {
-        var distanceX = (colony.map[aship[5]][0] - colony.map[aship[4]][0]), //to-from
-            distanceY = (colony.map[aship[5]][1] - colony.map[aship[4]][1]);
+        var distanceX = colony.map[aship[5]][0] - colony.map[aship[4]][0], //to-from
+            distanceY = colony.map[aship[5]][1] - colony.map[aship[4]][1];
         var distance = colonyUI.distance(colony.map[aship[5]][0], colony.map[aship[5]][1], colony.map[aship[4]][0], colony.map[aship[4]][1]);
         aship[0] += distanceX / distance * colony.config.shipSpeed * colonyUI.fps;
         aship[1] += distanceY / distance * colony.config.shipSpeed * colonyUI.fps;
@@ -98,25 +97,23 @@ var colony = {
     },
     ai: function () {
         window.setInterval(function () {
-            if(!pause)
-            {
+            if (!pause) {
                 for (let aiCamp = 1; aiCamp < colony.config.maxCamp; aiCamp++) {
-                    if (aiCamp == colony.camp) continue;
-                    var from=[],to=undefined,cent;
-                    var len=colony.map.length,dis=10000;
-                    var population=0,enemy_pop=new Array(5);
-                    var no_people_star=[],cnt=0,tmp=0;
+                    if (aiCamp === colony.camp) continue;
+                    var from = [], to = undefined, cent;
+                    var len = colony.map.length, dis = 10000;
+                    var population = 0, enemy_pop = new Array(5);
+                    var no_people_star = [], cnt = 0, tmp = 0;
                     for (let i = 0; i < len; i++) {
-                        let star=colony.map[i];
-                        if(!star[7]) no_people_star[cnt++]=i;
-            /*找出发点*/if(star[7]===aiCamp && star[5][aiCamp]>population) {
-                         population = star[5][aiCamp];
-                         from[tmp++] = i;
+                        let star = colony.map[i];
+                        if (!star[7]) no_people_star[cnt++] = i;
+            /*找出发点*/if (star[7] === aiCamp && star[5][aiCamp] > population) {
+                            population = star[5][aiCamp];
+                            from[tmp++] = i;
                         }
-                        else if(star[7]===aiCamp && star[5][aiCamp] == population) from[tmp++]=i;                     
+                        else if (star[7] === aiCamp && star[5][aiCamp] === population) from[tmp++] = i;
                     }
-                    if(typeof(no_people_star[0])!="undefined"){}
-                }
+                    if (typeof no_people_star[0] !== "undefined") { }
                     /*for(let i=0;i<len;i++){
                         let star = colony.map[i];
                         if (!star[5][aiCamp] || star[5][aiCamp] < 5) continue;
@@ -158,10 +155,10 @@ var colony = {
                             if (Math.random() > 0.5)
                                 break;
                         }
-                    }
-                if((typeof (from) !='undefined')&&(typeof (to) !='undefined')&&cent>0&&cent<=1)
+                    }*/
+                    if (typeof from !== 'undefined' && typeof to !== 'undefined' && cent > 0 && cent <= 1)
                         colony.shipMove(from, to, aiCamp, cent);
-                }*/
+                }
             }
         }, colony.config.aiThinkSpeed);
     },
@@ -202,7 +199,7 @@ var colony = {
             }
             background.onload = function () {
                 callback.call(background);
-            }
+            };
         }
         try {
             imageLoad(function(){
@@ -213,36 +210,47 @@ var colony = {
         }
     },
     init: function () {
-        colonyUI.canvasResize();
-        colonyUI.drawBackground();
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
         colony.map = [];
         colony.ship = [];
+        function title() {
+            colonyUI.canvasResize();
+            colonyUI.drawBackground();
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.font = "18pt Arial";
+            ctx.fillStyle = "black";
+            ctx.fillText("click to start", canvas.width / 2, canvas.height * 0.8);
+        }
+        title();
+        window.addEventListener("resize",title);
         document.getElementById("main_canvas").onclick = function (e) {
             $("#main").hide();
             colony.data=innerMapData;
             colonyUI.main(0);
             this.onclick = undefined;
+            window.removeEventListener("resize", title);
         };
         document.getElementById("openFile").addEventListener("click", function (e) {
-            e.preventDefault()
-            this.onchange = function () {
-                var selectedFile = document.getElementById("files").files[0];
+            e.preventDefault();
+            document.getElementById("file").onchange = function () {
+                var selectedFile = this.files[0];
                 var reader = new FileReader();
                 reader.readAsText(selectedFile);
                 reader.onload = function () {
                     colony.data = JSON.parse(this.result);
                     $("#main").hide();
                     colonyUI.main(0);
+                    window.removeEventListener("resize", title);
                 };
             };
             document.getElementById("file").click();
         });
     },
     main: function (status) {
+        colonyUI.canvasResize();
+        colonyUI.drawBackground();
         var len = colony.data.maps.length;
-        var text = "<div id=\"choose\"><h2 id=\"choose_tip\">Choose a map.</h2><p>";
+        var text = "<div id=\"choose\">";
         var mapN = 0;
         for (var i = 1; i <= len; i++) {
             text += "<button type=\"button\" class=\"choose_map\" id=\"map" + i + "\">" + i + "</button>";
@@ -252,12 +260,11 @@ var colony = {
         $("button.choose_map").click(function () {
             mapN = parseInt($(this).attr("id").substring(3)); //mapX
             $("button.choose_map").hide();
-            $("#choose_tip").hide();
             $("#pos").show();
             colony.loadMap(mapN);
         });
     },
-    controlUI: function (data) {
+    controlUI: function () {
         canvas.addEventListener("touchstart", function (e) {
             colonyUI.select(e);
             e.preventDefault();
@@ -284,7 +291,7 @@ var colony = {
             colony.shipMove(from, to, camp, colony.shipRatio);
         };
         document.getElementById("shipRatio").onchange = function (e) {
-            document.getElementById("shipRatioText").innerText = "shipRatio:" + this.value + "%";
+            document.getElementById("shipRatioText").innerText = this.value + "%";
             colony.shipRatio = parseInt(this.value) / 100;
         };
         background.src = "./images/background.jpg";
@@ -301,7 +308,7 @@ var colony = {
             colony.shipOrbit(aship, index);
             colonyUI.drawShipOnWay(aship);
         });
-        if (typeof (colony.lastSelect) !== 'undefined') {
+        if (typeof colony.lastSelect !== 'undefined') {
             colonyUI.drawStarSelectTip();
         }
         colony.winChick();
@@ -340,7 +347,7 @@ var colony = {
             totalCamp++;
         }
         if (totalCamp > 1) atWar = true;
-        if (totalCamp === 1 && (!star[5][star[3]])) capturing = true;
+        if (totalCamp === 1 && !star[5][star[3]]) capturing = true;
         for (let i = 0, len = star[5].length, populationCount = 0; i < len; i++) {
             text = star[5][i];
             if (!text) continue;
@@ -350,7 +357,7 @@ var colony = {
             if (atWar) {
                 ctx.lineWidth = 10;
                 ctx.beginPath();
-                ctx.arc(x, y, 10 * star[2] + 35, (populationCount / totalPopulation) * 2 * Math.PI, ((populationCount + text) / totalPopulation) * 2 * Math.PI, false);
+                ctx.arc(x, y, 10 * star[2] + 35, populationCount / totalPopulation * 2 * Math.PI, (populationCount + text) / totalPopulation * 2 * Math.PI, false);
                 ctx.stroke();
                 ctx.lineWidth = 2;
                 ctx.fillText(text.toFixed(), x + (10 * star[2] + 20) * Math.cos((populationCount + text / 2) / totalPopulation * Math.PI * 2), y + (10 * star[2] + 20) * Math.sin((populationCount + star[5][i] / 2) / totalPopulation * Math.PI * 2));
@@ -368,7 +375,7 @@ var colony = {
             } else {
                 star[7] = undefined;
             }
-            if ((!atWar) && (!capturing)) {
+            if (!atWar && !capturing) {
                 colony.grow(star);
             }
             populationCount += text;
@@ -408,16 +415,16 @@ var colony = {
         var zy = parseInt(loc.y);
         var x = zx / colonyUI.config.zoom_x; //test only
         var y = zy / colonyUI.config.zoom_y; //test only
-        document.getElementById("input_canvas").value = zx + "," + zy; //test only
-        document.getElementById("input_map").value = parseInt(x) + "," + parseInt(y); //test only
+        document.getElementById("input_canvas").value ="X，Y："+ zx + "," + zy; //test only
+        document.getElementById("input_map").value = "map X,Y: "+parseInt(x) + "," + parseInt(y); //test only
         if (pause) return;
         var match = false;
         for (var i = 0, len = colony.map.length; i < len; i++) {
             var star = colony.map[i];
             var starDistance = colonyUI.distance(zx, zy, colonyUI.config.zoom_x * star[0], colonyUI.config.zoom_y * star[1]);
-            if (starDistance < (10 * star[2] + 30)) {
+            if (starDistance < 10 * star[2] + 30) {
                 //document.getElementById("input_select").value = i; //test only
-                if (typeof (colony.lastSelect) === 'undefined') {
+                if (typeof colony.lastSelect === 'undefined') {
                     colony.lastSelect = i;
                 } else {
                     colony.shipMove(colony.lastSelect, i, colony.camp, colony.shipRatio);
@@ -436,16 +443,19 @@ var colony = {
         return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
     },
     calculateFpsAndTime: function () {
-        var now = Date.now(),
-            fps = 1000 / (now - lastTime);
+        var now = Date.now();
+        if (pause) {
+            lastTime = now;
+            return 0;
+        }
+        timer += now - lastTime;
+        var fps = 1000 / (now - lastTime);
         lastTime = now;
-        timeLsat = lastTime - beginTime;
-        document.getElementById("input_time").value = Math.floor(timeLsat / 60000) + ":" + Math.floor(timeLsat / 1000) % 60;
+        document.getElementById("input_time").value = Math.floor(timer / 60000) + ":" + Math.floor(timer / 1000) % 60;
         return fps;
     },
     canvasResize: function () {
         var w = window.innerWidth,
-
             h = window.innerHeight;
         var s = w / 2 > h;
         ctx.canvas.width = s ? h * 2 : w;
@@ -465,4 +475,10 @@ function animation() {
     if (!pause)
         colonyUI.updateFrame();
     window.requestAnimationFrame(animation);
+}
+function debugOn() {
+    $("#input_canvas").show();
+    $("#input_map").show();
+    $("#ship_control").show();
+    $("#ship_from_to").show();
 }

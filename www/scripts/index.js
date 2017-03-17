@@ -28,6 +28,6 @@
 
     function onResume() {
         // TODO: 此应用程序已重新激活。在此处还原应用程序状态。
-        pause = false;
+        //pause = false;
     }
 } )();
