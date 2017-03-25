@@ -4,24 +4,9 @@
 background.src = './images/background.main.jpg';
 var lastTime; //calculate Fps
 var timer = 0;
+var debug = false;
 var pause = false;
-var innerMapData = {
-    maps: [
-        [
-            [20, 20, 2, 1, 1],
-            [60, 40, 1, 2, 1]
-        ],
-        [
-            [20, 20, 1, 1, 1],
-            [20, 40, 2, 1, 1],
-            [60, 40, 3, 2, 1],
-            [60, 20, 3, 3, 1],
-            [30, 10, 1, 0, 1]
-        ]
-    ],
-    date: "2017.1.24",
-    author: "w12101111"
-};
+var innerMapData = { "maps": [[[400, 400, 2, 1, 1], [1200, 800, 1, 2, 1]], [[400, 400, 1, 1, 1], [400, 800, 2, 1, 1], [1200, 800, 3, 2, 1], [1200, 400, 3, 3, 1], [600, 200, 1, 0, 1]], [[1000, 500, 4, 2, 1], [400, 200, 2, 1, 1], [1600, 200, 2, 1, 1], [1000, 800, 2, 1, 1]], [[400, 400, 4, 1, 1], [1200, 400, 2, 2, 1], [800, 800, 2, 3, 1], [1400, 800, 2, 1, 1]], [[400, 200, 1, 1, 1], [600, 200, 1, 1, 1], [400, 500, 1, 1, 1], [600, 500, 1, 1, 1], [400, 800, 1, 1, 1], [600, 800, 1, 1, 1], [1500, 200, 1, 2, 1], [1500, 400, 1, 2, 1], [1500, 600, 1, 2, 1], [1500, 800, 1, 2, 1], [1400, 300, 1, 2, 1], [1400, 800, 1, 2, 1], [1600, 800, 1, 2, 1]], [[600, 200, 1, 1, 1], [400, 400, 1, 1, 1], [1600, 800, 1, 1, 1], [1000, 500, 3, 1, 1], [800, 800, 4, 2, 1], [1200, 600, 1, 2, 1]], [[400, 200, 2, 2, 1], [1600, 200, 2, 2, 1], [1000, 900, 2, 2, 1], [800, 400, 2, 1, 1], [1200, 400, 2, 1, 1], [1000, 600, 2, 1, 1]], [[1000, 200, 1, 3, 1], [1000, 500, 1, 3, 1], [1000, 800, 1, 3, 1], [700, 500, 4, 1, 1], [1300, 500, 4, 2, 1]], [[800, 400, 1, 0, 1], [1000, 500, 2, 0, 1], [1200, 600, 1, 0, 1], [600, 600, 3, 1, 1], [1400, 400, 3, 2, 1]], [[400, 400, 2, 1, 1], [400, 600, 2, 1, 1], [600, 500, 1, 0, 1], [800, 400, 4, 0, 1], [900, 540, 3, 0, 1], [1100, 460, 3, 0, 1], [1200, 600, 4, 0, 1], [1400, 500, 1, 0, 1], [1600, 400, 2, 2, 1], [1600, 600, 2, 2, 1]], [[200, 200, 2, 1, 1], [200, 800, 2, 1, 1], [300, 500, 2, 1, 1], [500, 500, 2, 1, 1], [600, 200, 2, 1, 1], [600, 800, 2, 1, 1], [800, 200, 2, 2, 1], [800, 800, 2, 2, 1], [1200, 200, 2, 2, 1], [1000, 400, 2, 2, 1], [1000, 600, 2, 2, 1], [1200, 800, 2, 2, 1], [1400, 200, 2, 3, 1], [1600, 200, 2, 3, 1], [1800, 200, 2, 3, 1], [1600, 400, 2, 3, 1], [1600, 600, 2, 3, 1], [1600, 800, 2, 3, 1]]], "date": "2017.1.24", "author": "w12101111" };
 var colony = {
         data: [],
         map: [], //0:x,1:y,2:size,3:camp,4:type,5:population array,6:orbit data array,7:capture() cent.8:atWar?
@@ -31,7 +16,7 @@ var colony = {
             initPopulation: 10,
             maxCamp: 6, //match colonyUI.color.length
             growthSpeed: 0.0005,
-            shipSpeed: 0.002,
+            shipSpeed: 0.02,
             combatSpeed: 0.001,
             captureSpeed: 0.004,
             aiThinkSpeed: 500,
@@ -199,11 +184,11 @@ var colony = {
             }
             if (win) {
                 pause = true;
-                colony.main(1);
+                colonyUI.main(1);
             }
             if (fail) {
                 pause = true;
-                colony.main(2);
+                colonyUI.main(2);
             }
         }
     },
@@ -235,11 +220,11 @@ var colony = {
                 colonyUI.drawBackground();
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.font = colonyUI.zoom / 2 + "pt Arial";
-                ctx.fillText("colony", 50, 20);
-                ctx.font = colonyUI.zoom / 8 + "pt Arial";
+                ctx.font ="144pt Arial";
+                ctx.fillText("colony", 1000, 400);
+                ctx.font ="36pt Arial";
                 ctx.fillStyle = "black";
-                ctx.fillText("click to start", 50, 40);
+                ctx.fillText("click to start", 1000, 800);
             }
             title();
             window.addEventListener("resize", title);
@@ -328,7 +313,7 @@ var colony = {
             background.src = "./images/background.jpg";
         },
         updateFrame: function() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width / colonyUI.zoom, canvas.height / colonyUI.zoom);
             colonyUI.drawBackground();
             colonyUI.fps = colonyUI.calculateFpsAndTime();
             colony.map.forEach(function(star, index) {
@@ -350,20 +335,22 @@ var colony = {
                 y = star[1];
             switch (star[4]) {
                 case 1:
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 3;
                     ctx.fillStyle = colonyUI.color[star[3]];
                     ctx.strokeStyle = "black";
                     ctx.beginPath();
-                    ctx.arc(x, y, 10 * star[2] + 10, 0, 2 * Math.PI, true);
+                    ctx.arc(x, y, 10*star[2]+20, 0, 2 * Math.PI, true);
                     ctx.stroke();
                     ctx.fill();
                     break;
             }
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.font = '10pt Arial'; //test only
-            ctx.fillStyle = "black"; //test only
-            ctx.fillText("index:" + index, x, y); //test only
+            ctx.font = '18pt Arial';
+            if (debug) {
+                ctx.fillStyle = "black";
+                ctx.fillText("index:" + index, x, y);
+            }
         },
         drawShipOnStar: function(star, index) {
             var x = star[0],
@@ -388,20 +375,20 @@ var colony = {
                 if (atWar) {
                     ctx.lineWidth = 10;
                     ctx.beginPath();
-                    ctx.arc(x, y, 10 * star[2] + 35, populationCount / totalPopulation * 2 * Math.PI, (populationCount + text) / totalPopulation * 2 * Math.PI, false);
+                    ctx.arc(x, y, 10 * star[2] + 50, populationCount / totalPopulation * 2 * Math.PI, (populationCount + text) / totalPopulation * 2 * Math.PI, false);
                     ctx.stroke();
                     ctx.lineWidth = 2;
-                    ctx.fillText(text.toFixed(), x + (10 * star[2] + 20) * Math.cos((populationCount + text / 2) / totalPopulation * Math.PI * 2), y + (10 * star[2] + 20) * Math.sin((populationCount + star[5][i] / 2) / totalPopulation * Math.PI * 2));
+                    ctx.fillText(text.toFixed(), x + (10 * star[2] + 35) * Math.cos((populationCount + text / 2) / totalPopulation * Math.PI * 2), y + (10 * star[2] + 35) * Math.sin((populationCount + star[5][i] / 2) / totalPopulation * Math.PI * 2));
                     colony.combat(star);
                 } else {
-                    ctx.fillText(text.toFixed(), x, y + (10 * star[2] + 20));
+                    ctx.fillText(text.toFixed(), x, y + (10 * star[2] + 35));
                     star[8] = false;
                 }
                 if (capturing) {
                     var cent = colony.capture(star);
                     ctx.lineWidth = 5;
                     ctx.beginPath();
-                    ctx.arc(x, y, 10 * star[2] + 35, 0, cent / 100 * 2 * Math.PI, false);
+                    ctx.arc(x, y, 10 * star[2] + 55, 0, cent / 100 * 2 * Math.PI, false);
                     ctx.stroke();
                 } else {
                     star[7] = undefined;
@@ -429,9 +416,9 @@ var colony = {
             var x = colony.map[colony.lastSelect][0],
                 y = colony.map[colony.lastSelect][1];
             ctx.strokeStyle = "black";
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 5;
             ctx.beginPath();
-            ctx.arc(x, y, 10 * colony.map[colony.lastSelect][2] + 50, 0, 2 * Math.PI, true);
+            ctx.arc(x, y, 10 * colony.map[colony.lastSelect][2] + 65, 0, 2 * Math.PI, true);
             ctx.stroke();
         },
         select: function(e) {
@@ -485,11 +472,12 @@ var colony = {
             document.getElementById("input_time").value = Math.floor(timer / 60000) + ":" + Math.floor(timer / 1000) % 60;
             return fps;
         },
-        canvasResize: function() {
+        canvasResize: function () {
+            ctx.scale(1/colonyUI.zoom, 1/colonyUI.zoom);
             var w = window.innerWidth,
                 h = window.innerHeight;
             var s = w / 2 > h;
-            colonyUI.zoom = (s ? h / 50 : w / 100) / colonyUI.zoom;
+            colonyUI.zoom = s ? h / 1000 : w / 2000;
             ctx.canvas.width = window.innerWidth;
             ctx.canvas.height = window.innerHeight;
             ctx.scale(colonyUI.zoom, colonyUI.zoom);
@@ -505,8 +493,8 @@ var colony = {
         windowTocanvas: function(canvas, x, y) {
             var bbox = canvas.getBoundingClientRect();
             return {
-                x: x - bbox.left * (canvas.width / bbox.width),
-                y: y - bbox.top * (canvas.height / bbox.height)
+                x: (x - bbox.left * (canvas.width / bbox.width)) / colonyUI.zoom,
+                y: (y - bbox.top * (canvas.height / bbox.height)) / colonyUI.zoom
             };
         }
     };
@@ -518,6 +506,7 @@ function animation() {
 }
 
 function debugOn() {
+    debug = true;
     $("#input_canvas").show();
     $("#input_map").show();
     $("#ship_control").show();
