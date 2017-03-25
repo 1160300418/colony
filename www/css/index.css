@@ -2,6 +2,7 @@ html,
 body {
     height: 100%;
     width: 100%;
+    background-color: #434343;
 }
 
 #main_canvas {
@@ -28,7 +29,7 @@ body {
 #range {
     position: absolute;
     display: none;
-    bottom: 5px;
+    bottom: 1em;
 }
 #input_map {
     width: 90px;
@@ -37,7 +38,10 @@ body {
 #input_time{
     width: 50px;
 }
-
+#shipRatioText 
+{
+    color:white;
+}
 #input_canvas {
     width: 110px;
 }
@@ -47,7 +51,7 @@ input[type="text"] {
 /*thanks http://blog.csdn.net/u013347241/article/details/51560290 */
 input[type="range"] {
     margin-top: 2px;
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
     width: 500px;
     -webkit-appearance: none;
