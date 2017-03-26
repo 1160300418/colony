@@ -98,79 +98,64 @@ var colony = {
                 star[5][star[3]] -= colony.config.growthSpeed * colonyUI.fps;
             }
         },
-        ai: function() {
-            window.setInterval(function() {
-                if (!pause) {
-                    for (let aiCamp = 1; aiCamp < colony.config.maxCamp; aiCamp++) {
-                        if (aiCamp === colony.camp) continue;
-                        /*var from = [], to = undefined, cent;
-                    var len = colony.map.length, dis = 10000;
-                    var population = 0, enemy_pop = new Array(5);
-                    var no_people_star = [], cnt = 0, tmp = 0;
-                    for (let i = 0; i < len; i++) {
-                        let star = colony.map[i];
-                        if (!star[7]) no_people_star[cnt++] = i;
-            /*找出发点*/
-                        /*/if (star[7] === aiCamp && star[5][aiCamp] > population) {
-                                                    population = star[5][aiCamp];
-                                                    from[tmp++] = i;
-                                                }
-                                                else if (star[7] === aiCamp && star[5][aiCamp] === population) from[tmp++] = i;
-                                            }
-                                            if (typeof no_people_star[0] !== "undefined") { }*/
-                        var from = undefined,
-                            to = undefined,
-                            cent = undefined;
-                        var len = colony.map.length;
-                        var population = 0;
-                        for (let i = 0; i < len; i++) {
-                            let star = colony.map[i];
-                            if (!star[5][aiCamp] || star[5][aiCamp] < 5) continue;
-                            if (!!star[7]) continue;
-                            if (!!star[8]) {
-                                from = i;
-                                break;
-                            }
-                            if (!star[8] && star[5][aiCamp] > population) {
-                                population = star[5][aiCamp];
-                                from = i;
-                            }
+        ai:function(){
+        window.setInterval(function(){
+            if(!pause)
+            {
+                for(let aiCamp=1;aiCamp<colony.config.maxCamp;aiCamp++){
+                    if(aiCamp==colony.camp)continue;
+                    var from=[],to=undefined,cent=undefined;
+                    var len=colony.map.length,dis=10000;
+                    var population=0,enemy_pop=[0,0,0,0,0,0,0],enemy_star=[];
+                    var no_people_star=[],cnt=0,tmp=0,cnn=0;
+                    for(let i=0;i<len;i++){
+                        let star=colony.map[i];
+                        if(!star[7]) no_people_star[cnt++]=i;
+            /*找出发点*/ if(star[7]===aiCamp )    from[tmp++] = i;
+                        if(star[3]>0 && star[3]!=aiCamp){
+                            enemy_pop[star[3]]+=star[5][star[3]];
+                            enemy_star[cnn++]=i;
+                        }  
+                    }
+                    from.sort(function(a,b) {
+                        return colony.map[b][5][aiCamp]-colony.map[a][5][aiCamp];
+                    });
+                    for(var i in ship) {
+                        if(colony.map[ship[i][5]][3]==aiCamp && ship[i][3]!=aiCamp && ship[i][2]>colony.map[ship[i][5]][5][aiCamp]){
+                            to=ship[i][4];
+                            colony.shipMove(ship[i][5],to,aiCamp,1);
                         }
-                        population = 1000;
-                        if (typeof from === 'undefined') continue;
-                        for (let i = 0; i < len; i++) {
-                            let star = colony.map[i];
-                            if (star[3] === aiCamp && (!!star[7] || !!star[8])) {
-                                to = i;
-                                let enemyMax = 0;
-                                for (let j = 0; j < star[5].length; j++) {
-                                    if (!!star[5][j] && star[5][j] > enemyMax) enemyMax = star[5][j];
+                    }
+                    if(typeof(no_people_star[0])!="undefined"){
+                        for(i=0;i<from.length;i++){
+                            if(colony.map[from[i]][5][aiCamp]>=30){
+                                for(var j=0;no_people_star[j]<1000 && j<no_people_star.length;j++){
+                                    if(distance(colony.map[from[i]][0],colony.map[from[i][2]],no_people_star[j].x,no_people_star[j].y)<dis){
+                                     dis=distance(colony.map[from[i]][0],colony.map[from[i][2]],no_people_star[j].x,no_people_star[j].y);
+                                     no_people_star[j]=1000;
+                                     to=j;
+                                    }
                                 }
-                                cent = enemyMax / colony.map[from][5][aiCamp];
-                                if (cent < 0.9) cent += 0.1;
-                                break;
-                            }
-                            if (star[3] === 0) {
-                                to = i;
-                                cent = colony.map[from][aiCamp] * 0.5 > 10 ? 0.5 : 10 / colony.map[from][5][aiCamp];
-                                if (Math.random() > 0.5)
-                                    break;
-                            }
-                            if (!star[7] && !star[8] && star[5][star[3]] < population) {
-                                population = star[5][star[3]];
-                                to = i;
-                                cent = population / colony.map[from][5][aiCamp];
-                                if (cent < 0.9) cent += 0.1;
-                                if (Math.random() > 0.5)
-                                    break;
+                                cent=1;
+                                colony.shipMove(from,to,aiCamp,cent);
                             }
                         }
-                        if (typeof from !== 'undefined' && typeof to !== 'undefined' && cent > 0 && cent <= 1)
-                            colony.shipMove(from, to, aiCamp, cent);
+                    }
+                    else{
+                        for(i=0;i<from.length;i++){
+                            from=i;
+                            for(j=0;j<enemy_star.length;j++){
+                                let star=colony.map[j];
+                                if(star[5][star[3]]<colony.map[i][5][aiCamp])  to=j;
+                                cent=1;
+                                colony.shipMove(from,to,aiCamp,cent);
+                            }
+                        }
                     }
                 }
-            }, colony.config.aiThinkSpeed);
-        },
+            }
+        },colony.config.aiThinkSpeed);
+    },
         winChick: function() {
             if (!colony.map[0]) return;
             if (pause) return;
