@@ -99,9 +99,9 @@ var colony = {
             }
         },
         ai:function(){
-        window.setInterval(function(){
-            if(!pause)
-            {
+            window.setInterval(function(){
+                if(!pause)
+                {
                 for(let aiCamp=1;aiCamp<colony.config.maxCamp;aiCamp++){
                     if(aiCamp==colony.camp)continue;
                     var from=[],to=undefined,cent=undefined;
@@ -120,10 +120,12 @@ var colony = {
                     from.sort(function(a,b) {
                         return colony.map[b][5][aiCamp]-colony.map[a][5][aiCamp];
                     });
-                    for(var i in ship) {
-                        if(colony.map[ship[i][5]][3]==aiCamp && ship[i][3]!=aiCamp && ship[i][2]>colony.map[ship[i][5]][5][aiCamp]){
-                            to=ship[i][4];
-                            colony.shipMove(ship[i][5],to,aiCamp,1);
+                    if (colony.ship.length>0){
+                        for (var i in colony.ship) {
+                            if (colony.map[colony.ship[i][5]][3] == aiCamp && colony.ship[i][3] != aiCamp && colony.ship[i][2] > colony.map[colony.ship[i][5]][5][aiCamp]) {
+                                to = colony.ship[i][4];
+                                colony.shipMove(colony.ship[i][5], to, aiCamp, 1);
+                            }
                         }
                     }
                     if(typeof(no_people_star[0])!="undefined"){
@@ -239,9 +241,11 @@ var colony = {
         main: function(status) {
             if (status === 1) {
                 alert("Congratulation,you are winner!");
+                $("#pos").hide();
                 colony.map = [];
                 colony.ship = [];
             } else if (status === 2) {
+                $("#pos").hide();
                 alert("You are defeated!");
                 colony.map = [];
                 colony.ship = [];
@@ -378,10 +382,10 @@ var colony = {
                 } else {
                     star[7] = undefined;
                 }
-                if (!atWar && !capturing) {
-                    colony.grow(star);
-                }
                 populationCount += text;
+            }
+            if (!atWar && !capturing) {
+                colony.grow(star);
             }
         },
         drawShipOnWay: function(ship) {
