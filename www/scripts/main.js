@@ -18,7 +18,7 @@ var colony = {
             growthSpeed: 0.0005,
             shipSpeed: 0.02,
             combatSpeed: 0.001,
-            captureSpeed: 0.004,
+            captureSpeed: 0.00004,
             aiThinkSpeed: 500,
             mapSelect: undefined
         },
@@ -75,20 +75,23 @@ var colony = {
                 star[5][i] -= colony.config.combatSpeed * colonyUI.fps;
             }
         },
-        capture: function(star) {
+        capture: function(star,index) {
             if (star[8]) return 0;
-            if (!star[7]) star[7] = 0;
-            star[7] += colony.config.captureSpeed * colonyUI.fps;
-            if (star[7] > 100) {
-                for (let i = 0, len = star[5].length; i < len; i++) {
-                    if (star[5][i]) {
-                        star[3] = i;
-                        star[7] = undefined;
-                        break;
-                    }
-                }
+            if (!star[7]) star[7] = star[3];
+            if (star[3]!==index ) {
+                star[7] += colony.config.captureSpeed * colonyUI.fps * 2;
             }
-            return star[7];
+            if (star[3] === index) {
+                star[7] += colony.config.captureSpeed * colonyUI.fps;
+            }
+            if (star[7] > star[3] + 1 && star[3]!==index) {
+                star[3] = index;
+                star[7] = index;
+            }
+            if (star[7] > star[3] + 1 && star[3] === index) {
+                star[7] = undefined;
+            }
+            return star[7]*100%100/100;
         },
         grow: function(star) {
             if (star[5][star[3]] < star[2] * colony.config.maxPopulation) {
@@ -341,7 +344,7 @@ var colony = {
                 ctx.fillText("index:" + index, x, y);
             }
         },
-        drawShipOnStar: function(star, index) {
+        drawShipOnStar: function(star) {
             var x = star[0],
                 y = star[1];
             var totalPopulation = 0,
@@ -354,14 +357,14 @@ var colony = {
                 totalCamp++;
             }
             if (totalCamp > 1) atWar = true;
-            if (totalCamp === 1 && !star[5][star[3]]) capturing = true;
+            if (star[7] || totalCamp === 1 && !star[5][star[3]]) capturing = true;
             for (let i = 0, len = star[5].length, populationCount = 0; i < len; i++) {
                 text = star[5][i];
                 if (!text) continue;
-                ctx.fillStyle = colonyUI.color[i];
-                ctx.strokeStyle = colonyUI.color[i];
                 if (!populationCount && text) populationCount = totalPopulation / 4 - text / 2;
                 if (atWar) {
+                    ctx.fillStyle = colonyUI.color[i];
+                    ctx.strokeStyle = colonyUI.color[i];
                     ctx.lineWidth = 10;
                     ctx.beginPath();
                     ctx.arc(x, y, 10 * star[2] + 50, populationCount / totalPopulation * 2 * Math.PI, (populationCount + text) / totalPopulation * 2 * Math.PI, false);
@@ -370,14 +373,17 @@ var colony = {
                     ctx.fillText(text.toFixed(), x + (10 * star[2] + 35) * Math.cos((populationCount + text / 2) / totalPopulation * Math.PI * 2), y + (10 * star[2] + 35) * Math.sin((populationCount + star[5][i] / 2) / totalPopulation * Math.PI * 2));
                     colony.combat(star);
                 } else {
+                    ctx.fillStyle = colonyUI.color[i];
                     ctx.fillText(text.toFixed(), x, y + (10 * star[2] + 35));
                     star[8] = false;
                 }
                 if (capturing) {
-                    var cent = colony.capture(star);
+                    var cent = colony.capture(star,i);
                     ctx.lineWidth = 5;
+                    ctx.strokeStyle = colonyUI.color[star[3]];
                     ctx.beginPath();
-                    ctx.arc(x, y, 10 * star[2] + 55, 0, cent / 100 * 2 * Math.PI, false);
+                    var round = star[3] !== i ? true:false;
+                    ctx.arc(x, y, 10 * star[2] + 55, 0, cent * 2 * Math.PI, round);
                     ctx.stroke();
                 } else {
                     star[7] = undefined;
