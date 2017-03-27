@@ -6,6 +6,7 @@ var lastTime; //calculate Fps
 var timer = 0;
 var debug = false;
 var pause = false;
+var end = true;
 var innerMapData = { "maps": [[[400, 400, 2, 1, 1], [1200, 800, 1, 2, 1]], [[400, 400, 1, 1, 1], [400, 800, 2, 1, 1], [1200, 800, 3, 2, 1], [1200, 400, 3, 3, 1], [600, 200, 1, 0, 1]], [[1000, 500, 4, 2, 1], [400, 200, 2, 1, 1], [1600, 200, 2, 1, 1], [1000, 800, 2, 1, 1]], [[400, 400, 4, 1, 1], [1200, 400, 2, 2, 1], [800, 800, 2, 3, 1], [1400, 800, 2, 1, 1]], [[400, 200, 1, 1, 1], [600, 200, 1, 1, 1], [400, 500, 1, 1, 1], [600, 500, 1, 1, 1], [400, 800, 1, 1, 1], [600, 800, 1, 1, 1], [1500, 200, 1, 2, 1], [1500, 400, 1, 2, 1], [1500, 600, 1, 2, 1], [1500, 800, 1, 2, 1], [1400, 300, 1, 2, 1], [1400, 800, 1, 2, 1], [1600, 800, 1, 2, 1]], [[600, 200, 1, 1, 1], [400, 400, 1, 1, 1], [1600, 800, 1, 1, 1], [1000, 500, 3, 1, 1], [800, 800, 4, 2, 1], [1200, 600, 1, 2, 1]], [[400, 200, 2, 2, 1], [1600, 200, 2, 2, 1], [1000, 900, 2, 2, 1], [800, 400, 2, 1, 1], [1200, 400, 2, 1, 1], [1000, 600, 2, 1, 1]], [[1000, 200, 1, 3, 1], [1000, 500, 1, 3, 1], [1000, 800, 1, 3, 1], [700, 500, 4, 1, 1], [1300, 500, 4, 2, 1]], [[800, 400, 1, 0, 1], [1000, 500, 2, 0, 1], [1200, 600, 1, 0, 1], [600, 600, 3, 1, 1], [1400, 400, 3, 2, 1]], [[400, 400, 2, 1, 1], [400, 600, 2, 1, 1], [600, 500, 1, 0, 1], [800, 400, 4, 0, 1], [900, 540, 3, 0, 1], [1100, 460, 3, 0, 1], [1200, 600, 4, 0, 1], [1400, 500, 1, 0, 1], [1600, 400, 2, 2, 1], [1600, 600, 2, 2, 1]], [[200, 200, 2, 1, 1], [200, 800, 2, 1, 1], [300, 500, 2, 1, 1], [500, 500, 2, 1, 1], [600, 200, 2, 1, 1], [600, 800, 2, 1, 1], [800, 200, 2, 2, 1], [800, 800, 2, 2, 1], [1200, 200, 2, 2, 1], [1000, 400, 2, 2, 1], [1000, 600, 2, 2, 1], [1200, 800, 2, 2, 1], [1400, 200, 2, 3, 1], [1600, 200, 2, 3, 1], [1800, 200, 2, 3, 1], [1600, 400, 2, 3, 1], [1600, 600, 2, 3, 1], [1600, 800, 2, 3, 1]]], "date": "2017.1.24", "author": "w12101111" };
 var colony = {
         data: [],
@@ -27,6 +28,7 @@ var colony = {
         lastSelect: undefined,
         loadMap: function(n) {
             lastTime = Date.now();
+            end = false;
             colony.map = colony.data.maps[n - 1];
             colony.map.forEach(function(star) {
                 star[5] = new Array(colony.config.maxCamp);
@@ -173,12 +175,18 @@ var colony = {
                     fail = false;
             }
             if (win) {
-                pause = true;
-                colonyUI.main(1);
+                end = true;
+                setTimeout(function () {
+                    pause = true;
+                    colonyUI.main(1);
+                },1000);
             }
             if (fail) {
-                pause = true;
-                colonyUI.main(2);
+                end = true;
+                setTimeout(function () {
+                    pause = true;
+                    colonyUI.main(2);
+                }, 1000);
             }
         }
     },
@@ -319,7 +327,9 @@ var colony = {
             if (typeof colony.lastSelect !== 'undefined') {
                 colonyUI.drawStarSelectTip();
             }
-            colony.winChick();
+            if (!end) {
+                colony.winChick();
+            }
             document.getElementById("input_fps").value = colonyUI.fps.toFixed() + ' fps';
         },
         drawStar: function(star, index) {
@@ -358,6 +368,10 @@ var colony = {
             }
             if (totalCamp > 1) atWar = true;
             if (star[7] || totalCamp === 1 && !star[5][star[3]]) capturing = true;
+            if (star[7] && totalCamp === 0) {
+                star[7] = undefined;
+                star[3] = 0;
+            }
             for (let i = 0, len = star[5].length, populationCount = 0; i < len; i++) {
                 text = star[5][i];
                 if (!text) continue;
