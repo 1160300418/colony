@@ -29,6 +29,7 @@ var colony = {
         loadMap: function(n) {
             lastTime = Date.now();
             end = false;
+            timer = 0;
             colony.map = colony.data.maps[n - 1];
             colony.map.forEach(function(star) {
                 star[5] = new Array(colony.config.maxCamp);
@@ -44,7 +45,7 @@ var colony = {
             if (from === to) return;
             if (!colony.map[from][5][camp]) return;
             if (!colony.map[to][5][camp]) colony.map[to][5][camp] = 0;
-            let movePopulation = parseInt((colony.map[from][5][camp] * cent).toFixed());
+            var movePopulation = parseInt((colony.map[from][5][camp] * cent).toFixed());
             colony.map[from][5][camp] = parseInt(((1 - cent) * colony.map[from][5][camp]).toFixed());
             var ship = [];
             ship[0] = colony.map[from][0];
@@ -58,7 +59,8 @@ var colony = {
         shipOrbit: function(aship, index) {
             var distanceX = colony.map[aship[5]][0] - colony.map[aship[4]][0], //to-from
                 distanceY = colony.map[aship[5]][1] - colony.map[aship[4]][1];
-            var distance = colonyUI.distance(colony.map[aship[5]][0], colony.map[aship[5]][1], colony.map[aship[4]][0], colony.map[aship[4]][1]);
+            var distance = colonyUI.distance(colony.map[aship[5]][0], colony.map[aship[5]][1],
+                        colony.map[aship[4]][0], colony.map[aship[4]][1]);
             aship[0] += distanceX / distance * colony.config.shipSpeed * colonyUI.fps;
             aship[1] += distanceY / distance * colony.config.shipSpeed * colonyUI.fps;
             if ((aship[0] - colony.map[aship[5]][0]) * distanceX > 0 || (aship[1] - colony.map[aship[5]][1]) * distanceY > 0) {
@@ -71,7 +73,7 @@ var colony = {
         },
         combat: function(star) {
             if (!star[8]) star[8] = true;
-            for (let i = 0, len = star[5].length; i < len; i++) {
+            for (var i = 0, len = star[5].length; i < len; i++) {
                 if (!star[5][i]) continue;
                 if (star[5][i] < 0) star[5][i] = undefined;
                 star[5][i] -= colony.config.combatSpeed * colonyUI.fps;
@@ -107,14 +109,14 @@ var colony = {
             window.setInterval(function(){
                 if(!pause)
                 {
-                for(let aiCamp=1;aiCamp<colony.config.maxCamp;aiCamp++){
+                for(var aiCamp=1;aiCamp<colony.config.maxCamp;aiCamp++){
                     if(aiCamp==colony.camp)continue;
                     var from=[],to=undefined,cent=undefined;
                     var len=colony.map.length,dis=10000;
                     var population=0,enemy_pop=[0,0,0,0,0,0,0],enemy_star=[];
                     var no_people_star=[],cnt=0,tmp=0,cnn=0;
-                    for(let i=0;i<len;i++){
-                        let star=colony.map[i];
+                    for(var i=0;i<len;i++){
+                        var star=colony.map[i];
                         if(!star[7]) no_people_star[cnt++]=i;
             /*找出发点*/ if(star[7]===aiCamp )    from[tmp++] = i;
                         if(star[3]>0 && star[3]!=aiCamp){
@@ -127,7 +129,8 @@ var colony = {
                     });
                     if (colony.ship.length>0){
                         for (var i in colony.ship) {
-                            if (colony.map[colony.ship[i][5]][3] == aiCamp && colony.ship[i][3] != aiCamp && colony.ship[i][2] > colony.map[colony.ship[i][5]][5][aiCamp]) {
+                            if (colony.map[colony.ship[i][5]][3] == aiCamp && colony.ship[i][3] != aiCamp &&
+                                        colony.ship[i][2] > colony.map[colony.ship[i][5]][5][aiCamp]) {
                                 to = colony.ship[i][4];
                                 colony.shipMove(colony.ship[i][5], to, aiCamp, 1);
                             }
@@ -152,7 +155,7 @@ var colony = {
                         for(i=0;i<from.length;i++){
                             from=i;
                             for(j=0;j<enemy_star.length;j++){
-                                let star=colony.map[j];
+                                var star=colony.map[j];
                                 if(star[5][star[3]]<colony.map[i][5][aiCamp])  to=j;
                                 cent=1;
                                 colony.shipMove(from,to,aiCamp,cent);
@@ -168,7 +171,7 @@ var colony = {
             if (pause) return;
             var win = true;
             var fail = true;
-            for (let i = 0, len = colony.map.length; i < len; i++) {
+            for (var i = 0, len = colony.map.length; i < len; i++) {
                 if (colony.map[i][3] !== colony.camp)
                     win = false;
                 else
@@ -260,6 +263,10 @@ var colony = {
                 alert("You are defeated!");
                 colony.map = [];
                 colony.ship = [];
+            } else if (status === 3) {
+                $("#pos").hide();
+                colony.map = [];
+                colony.ship = [];
             }
             colonyUI.canvasResize();
             colonyUI.drawBackground();
@@ -301,7 +308,7 @@ var colony = {
             };
             document.getElementById("ship_control").onclick = function(e) {
                 var shipControlInput = document.getElementById("ship_from_to").value; //from,to,camp
-                let from = parseInt(shipControlInput),
+                var from = parseInt(shipControlInput),
                     to = parseInt(shipControlInput.substring(from.toString().length + 1)),
                     camp = parseInt(shipControlInput.substring(from.toString().length + to.toString().length + 2));
                 colony.shipMove(from, to, camp, colony.shipRatio);
@@ -309,6 +316,11 @@ var colony = {
             document.getElementById("shipRatio").onchange = function(e) {
                 document.getElementById("shipRatioText").innerText = this.value + "%";
                 colony.shipRatio = parseInt(this.value) / 100;
+            }; 
+            document.getElementById("exit").onclick = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                colonyUI.main(3);
             };
             background.src = "./images/background.jpg";
         },
@@ -361,7 +373,7 @@ var colony = {
                 totalCamp = 0,
                 atWar = false,
                 capturing = false;
-            for (let i = 0, len = star[5].length; i < len; i++) {
+            for (var i = 0, len = star[5].length; i < len; i++) {
                 if (!star[5][i]) continue;
                 totalPopulation += star[5][i];
                 totalCamp++;
@@ -372,7 +384,7 @@ var colony = {
                 star[7] = undefined;
                 star[3] = 0;
             }
-            for (let i = 0, len = star[5].length, populationCount = 0; i < len; i++) {
+            for (var i = 0, len = star[5].length, populationCount = 0; i < len; i++) {
                 text = star[5][i];
                 if (!text) continue;
                 if (!populationCount && text) populationCount = totalPopulation / 4 - text / 2;
@@ -381,10 +393,12 @@ var colony = {
                     ctx.strokeStyle = colonyUI.color[i];
                     ctx.lineWidth = 10;
                     ctx.beginPath();
-                    ctx.arc(x, y, 10 * star[2] + 50, populationCount / totalPopulation * 2 * Math.PI, (populationCount + text) / totalPopulation * 2 * Math.PI, false);
+                    ctx.arc(x, y, 10 * star[2] + 50, populationCount / totalPopulation * 2 * Math.PI,
+                            (populationCount + text) / totalPopulation * 2 * Math.PI, false);
                     ctx.stroke();
                     ctx.lineWidth = 2;
-                    ctx.fillText(text.toFixed(), x + (10 * star[2] + 35) * Math.cos((populationCount + text / 2) / totalPopulation * Math.PI * 2), y + (10 * star[2] + 35) * Math.sin((populationCount + star[5][i] / 2) / totalPopulation * Math.PI * 2));
+                    ctx.fillText(text.toFixed(),x + (10 * star[2] + 35) * Math.cos((populationCount + text / 2) / totalPopulation *Math.PI* 2),
+                            y + (10 * star[2] + 35) * Math.sin((populationCount + star[5][i] / 2) / totalPopulation * Math.PI * 2));
                     colony.combat(star);
                 } else {
                     ctx.fillStyle = colonyUI.color[i];
