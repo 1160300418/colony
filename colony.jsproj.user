@@ -13,8 +13,17 @@
     <DebuggerRequireAuthentication>false</DebuggerRequireAuthentication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Windows-x64'">
-    <DebuggerFlavor>WindowsLocal</DebuggerFlavor>
-    <DebuggerMachineName>LAPTOP-6TKPLVKI</DebuggerMachineName>
+    <DebuggerFlavor>WindowsRemote</DebuggerFlavor>
+    <DebuggerMachineName>DESKTOP-67GH5LL</DebuggerMachineName>
     <DebuggerRequireAuthentication>false</DebuggerRequireAuthentication>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Windows-x64'">
+    <DebuggerFlavor>WindowsRemote</DebuggerFlavor>
+    <DebuggerMachineName>DESKTOP-67GH5LL</DebuggerMachineName>
+    <DebuggerRequireAuthentication>false</DebuggerRequireAuthentication>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Android'">
+    <DebuggerFlavor>AndroidEmulator</DebuggerFlavor>
+    <AndroidEmulatorID>AndroidDevice;设备</AndroidEmulatorID>
   </PropertyGroup>
 </Project>
